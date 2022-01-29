@@ -1,0 +1,9 @@
+{
+  "devDependencies": {
+    "@openzeppelin/truffle-upgrades": "^1.12.0",
+    "@truffle/hdwallet-provider": "^2.0.1"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts-upgradeable": "^4.4.2"
+  }
+}
