@@ -5,13 +5,12 @@ import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
-
-
+import "./IGameItem.sol";
 
 /*版本更新： 更新level为prcie
 *           新增 purchaseGoods方法
 */ 
-contract GameItems is ERC1155  {
+contract GameItems is ERC1155, IGameItem {
 
    //道具结构体
     struct gamePrope{
@@ -29,7 +28,7 @@ contract GameItems is ERC1155  {
 
     gamePrope[] public gamePropeArray;
     address public owner;
-    address constant public usdt = 0xde3A24028580884448a5397872046a019649b084;
+    address public LOB;
     string  private URI_PREFIX = "https://cyberpop.mypinata.cloud/ipfs/";
 
    using Counters for Counters.Counter;
@@ -39,8 +38,9 @@ contract GameItems is ERC1155  {
    
   event updateGamePropeEVent();
 
-   constructor() ERC1155("https://cyberpop.mypinata.cloud/ipfs/{id}.json") {
+   constructor(address LOB_) ERC1155("https://cyberpop.mypinata.cloud/ipfs/{id}.json") {
          owner = _msgSender();
+         LOB = LOB_;
    }
     
       //检查商品定价跟实际转账是否一致
@@ -48,7 +48,6 @@ contract GameItems is ERC1155  {
         require(gamePropeArray[tokenId-1].price == amount,"The price of the item does not match");
         _;
     }           
-
     
     /*
     * 方法作用：显示对应token对应的urlength
@@ -59,10 +58,8 @@ contract GameItems is ERC1155  {
         return string( abi.encodePacked(URI_PREFIX, Strings.toString(_tokenId), ".json" ));
     }
 
-
-
     /*
-    *方法作用:返回总共发行的token种类数
+    *方法作用:返回总共发行的tokenId
     */
     function totalSupply() view public returns(uint256 totalSupply){
         return _tokenIds.current();
@@ -86,7 +83,8 @@ contract GameItems is ERC1155  {
 
 
     /* 方法作用：批量创建多个nft宝物
-     * 参数含义: 1) player：玩家钱包地址 2) name[]:道具名子 3） length 需要为玩家创建多少个nft 4) propeType[] 道具对应的类型（招式或者支援卡） 5) price:道具等级
+     * 参数含义: 1) player：玩家钱包地址 2) name[]:道具名子 3）tokensUrl:对应代币的url
+     * 4) length 需要为玩家创建多少个nft 5) propeType[] 道具对应的类型（招式或者支援卡） 6) price:道具等级
      * 参数返回: tokendIds: uint256[]
     */
     function batchCreateGamePrope(address player,string[] memory name,string[] memory tokensUrl,uint64 length,uint64[] memory propeType,uint64[] memory price)
@@ -111,16 +109,19 @@ contract GameItems is ERC1155  {
 
      /* 方法作用：玩家购买商品
      * 参数含义: 1) tokenId：商品Id 2 price: 商品价格)
-     * 操作方法： 需要owner地址用户先调用setApprovalForAll授权给合约地址为ture
+     * 操作方法： 需要from地址用户先调用setApprovalForAll授权给合约地址为ture
      * 参数返回: tokendId: uint256
     */
-    function purchaseGoods(address player,uint256 tokenId,uint256 price) checkGamesPrice(tokenId,price) public{
+
+    //这个方法授权给msg.sender地址就可以购买了，所有得把这个方法抽象出来
+    function purchaseGoods(address from,address to,uint256 tokenId,uint256 price) override checkGamesPrice(tokenId,price) public{
         require(tokenId>=0,"tokenId: input value is not valid");
-        IERC20(usdt).transferFrom(_msgSender(),address(this),price);
-        require(balanceOf(_msgSender(),tokenId)>=1,"The item has been sold, please contact the token of owner");
-        safeTransferFrom(owner,player,tokenId,1,""); //转账nft给玩家
+        IERC20(LOB).transferFrom(to,from,price);
+        // require(balanceOf(_msgSender(),tokenId)>=1,"The item has been sold, please contact the token of owner");
+        safeTransferFrom(from,to,tokenId,1,"0x"); //转账nft给玩家
     }
 
+    //该方法用于玩家内部交易
 
    //显示装备,该方法前期仅做测试用
    function showGamePropeInfo(uint gId) public view returns(gamePrope memory) {

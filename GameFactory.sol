@@ -1,5 +1,5 @@
 pragma solidity ^0.8.0;
-import "./GameItem2.sol";
+import "./GameItem.sol";
 
 contract GameFactory{
     address public feeToSetter;
@@ -9,13 +9,14 @@ contract GameFactory{
         feeToSetter = _feeToSetter;
     }
 
-    event createNewPropeEVent(uint propeClassName,address propeClass,uint);
+    event createNewPropeEVent(string propeClassName,address propeClass,uint);
+
     function setFeeToSetter(address _feeToSetter) external {
         require(msg.sender == feeToSetter, 'UniswapV2: FORBIDDEN');
         feeToSetter = _feeToSetter;
     }
 
-    function createNewPrope(uint  propeClassName) public  payable returns (address propeClass){
+    function createNewPrope(string memory  propeClassName) public  payable returns (address propeClass){
         bytes memory bytecode = type(GameItems).creationCode;
         bytes32 salt = keccak256(abi.encodePacked(propeClassName));     
         assembly {
@@ -23,9 +24,12 @@ contract GameFactory{
         }
         require(propeClass != address(0), "Create2: Failed on deploy");
         allpropeClass.push(propeClass);
-        
         emit createNewPropeEVent(propeClassName,propeClass,allpropeClass.length);
     }
 
+    function createNewPrope2(address LOB,string memory  propeClassName) public  returns (address propeClass){
+     
+       return address(new GameItems{salt: keccak256(abi.encode(propeClass))}(LOB)); 
+    }
 
 }  
