@@ -27,7 +27,7 @@ contract CyberPopBadge is
     constructor() initializer {}
 
     function initialize() public initializer {
-        __ERC1155_init("https://assets.cyberpop.com/badges/{}.json");
+        __ERC1155_init("https://api.cyberpop.online/server/{}");
         __AccessControl_init();
         __Pausable_init();
         __ERC1155Burnable_init();
@@ -39,6 +39,14 @@ contract CyberPopBadge is
         _grantRole(PAUSER_ROLE, msg.sender);
         _grantRole(MINTER_ROLE, msg.sender);
         _grantRole(UPGRADER_ROLE, msg.sender);
+    }
+
+    function name() public pure returns (string memory) {
+        return "CyberPop Badge";
+    }
+
+    function symbol() public pure returns (string memory) {
+        return "CBG";
     }
 
     function setURI(string memory newuri) public onlyRole(URI_SETTER_ROLE) {
