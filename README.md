@@ -2,9 +2,18 @@
 
 ```
 npm install -g truffle
-cp .secret.json.example .secret.json
 npm install
 ```
+
+## Mnemonic and Infura project ID
+
+First create `.secret.json`
+
+```
+cp .secret.json.example .secret.json
+```
+
+Then replace add the infura project ID to the `.secret.json` file
 
 # deploy
 

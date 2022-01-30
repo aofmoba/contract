@@ -1,5 +1,5 @@
 const HDWalletProvider = require('@truffle/hdwallet-provider');
-const { mnemonic } = require('./.secret.json');
+const { mnemonic, infura } = require('./.secret.json');
 
 
 /**
@@ -71,11 +71,10 @@ module.exports = {
     // },
     // Useful for private networks
     mumbai: {
-      provider: () => new HDWalletProvider(mnemonic, `https://rpc-mumbai.maticvigil.com`),
+      provider: () => new HDWalletProvider(mnemonic, `https://polygon-mumbai.infura.io/v3/${infura}`),
       network_id: 80001,
-      confirmations: 2,
-      timeoutBlocks: 200,
-      skipDryRun: true
+      skipDryRun: true,
+      production: false
     },
     // private: {
     // provider: () => new HDWalletProvider(mnemonic, `https://network.io`),
