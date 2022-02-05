@@ -9,7 +9,7 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
 
-contract CyberPopBadge is
+contract CyberPopBadgeV2 is
     Initializable,
     ERC1155Upgradeable,
     AccessControlUpgradeable,
@@ -86,14 +86,6 @@ contract CyberPopBadge is
         _setURI(newuri);
     }
 
-    function pause() public onlyRole(PAUSER_ROLE) {
-        _pause();
-    }
-
-    function unpause() public onlyRole(PAUSER_ROLE) {
-        _unpause();
-    }
-
     function mint(
         address account,
         uint256 id,
@@ -119,7 +111,7 @@ contract CyberPopBadge is
         uint256[] memory ids,
         uint256[] memory amounts,
         bytes memory data
-    ) internal override(ERC1155Upgradeable) whenNotPaused {
+    ) internal override(ERC1155Upgradeable) {
         super._beforeTokenTransfer(operator, from, to, ids, amounts, data);
     }
 
