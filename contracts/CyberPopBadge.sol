@@ -2,9 +2,8 @@
 pragma solidity ^0.8.2;
 
 import "@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155Upgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC1155/extensions/ERC1155BurnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC1155/extensions/ERC1155SupplyUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
@@ -12,34 +11,18 @@ import "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
 contract CyberPopBadge is
     Initializable,
     ERC1155Upgradeable,
-    AccessControlUpgradeable,
-    PausableUpgradeable,
-    ERC1155BurnableUpgradeable,
+    OwnableUpgradeable,
+    ERC1155SupplyUpgradeable,
     UUPSUpgradeable
 {
-    bytes32 public constant URI_SETTER_ROLE = keccak256("URI_SETTER_ROLE");
-    bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
-    bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
-    bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
-    string private uri_prefix;
-
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() initializer {}
 
     function initialize() public initializer {
-        uri_prefix = "https://api.cyberpop.online/server/";
-        __ERC1155_init(uri_prefix);
-
-        __AccessControl_init();
-        __Pausable_init();
-        __ERC1155Burnable_init();
+        __ERC1155_init("http://3.142.189.202:9001/server/");
+        __Ownable_init();
+        __ERC1155Supply_init();
         __UUPSUpgradeable_init();
-
-        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        _grantRole(URI_SETTER_ROLE, msg.sender);
-        _grantRole(PAUSER_ROLE, msg.sender);
-        _grantRole(MINTER_ROLE, msg.sender);
-        _grantRole(UPGRADER_ROLE, msg.sender);
     }
 
     function name() public pure returns (string memory) {
@@ -72,6 +55,7 @@ contract CyberPopBadge is
         override
         returns (string memory)
     {
+        string memory uri_prefix = super.uri(_tokenId);
         return
             string(
                 abi.encodePacked(
@@ -81,17 +65,8 @@ contract CyberPopBadge is
             );
     }
 
-    function setURI(string memory newuri) public onlyRole(URI_SETTER_ROLE) {
-        uri_prefix = newuri;
+    function setURI(string memory newuri) public onlyOwner {
         _setURI(newuri);
-    }
-
-    function pause() public onlyRole(PAUSER_ROLE) {
-        _pause();
-    }
-
-    function unpause() public onlyRole(PAUSER_ROLE) {
-        _unpause();
     }
 
     function mint(
@@ -99,7 +74,7 @@ contract CyberPopBadge is
         uint256 id,
         uint256 amount,
         bytes memory data
-    ) public onlyRole(MINTER_ROLE) {
+    ) public onlyOwner {
         _mint(account, id, amount, data);
     }
 
@@ -108,9 +83,17 @@ contract CyberPopBadge is
         uint256[] memory ids,
         uint256[] memory amounts,
         bytes memory data
-    ) public onlyRole(MINTER_ROLE) {
+    ) public onlyOwner {
         _mintBatch(to, ids, amounts, data);
     }
+
+    function _authorizeUpgrade(address newImplementation)
+        internal
+        override
+        onlyOwner
+    {}
+
+    // The following functions are overrides required by Solidity.
 
     function _beforeTokenTransfer(
         address operator,
@@ -119,24 +102,7 @@ contract CyberPopBadge is
         uint256[] memory ids,
         uint256[] memory amounts,
         bytes memory data
-    ) internal override(ERC1155Upgradeable) whenNotPaused {
+    ) internal override(ERC1155Upgradeable, ERC1155SupplyUpgradeable) {
         super._beforeTokenTransfer(operator, from, to, ids, amounts, data);
-    }
-
-    function _authorizeUpgrade(address newImplementation)
-        internal
-        override
-        onlyRole(UPGRADER_ROLE)
-    {}
-
-    // The following functions are overrides required by Solidity.
-
-    function supportsInterface(bytes4 interfaceId)
-        public
-        view
-        override(ERC1155Upgradeable, AccessControlUpgradeable)
-        returns (bool)
-    {
-        return super.supportsInterface(interfaceId);
     }
 }
