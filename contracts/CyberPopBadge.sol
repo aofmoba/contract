@@ -21,7 +21,7 @@ contract CyberPopBadge is
     constructor() initializer {}
 
     function initialize() public initializer {
-        __ERC1155_init("http://3.142.189.202:9001/server/");
+        __ERC1155_init("https://api.cyberpop.online/server/");
         __Ownable_init();
         __ERC1155Supply_init();
         __UUPSUpgradeable_init();
