@@ -15,6 +15,8 @@ contract CyberPopBadge is
     ERC1155SupplyUpgradeable,
     UUPSUpgradeable
 {
+    uint256 private _numOptions;
+
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() initializer {}
 
@@ -23,6 +25,7 @@ contract CyberPopBadge is
         __Ownable_init();
         __ERC1155Supply_init();
         __UUPSUpgradeable_init();
+        _numOptions = 2;
     }
 
     function name() public pure returns (string memory) {
@@ -33,8 +36,12 @@ contract CyberPopBadge is
         return "CBG";
     }
 
-    function numOptions() public pure returns (uint256) {
-        return 2;
+    function numOptions() public view returns (uint256) {
+        return _numOptions;
+    }
+
+    function setNumOptions(uint256 options) public onlyOwner {
+        _numOptions = options;
     }
 
     function batchBalanceOf(address account)
