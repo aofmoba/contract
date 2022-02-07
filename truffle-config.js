@@ -76,6 +76,12 @@ module.exports = {
       skipDryRun: true,
       production: false
     },
+    matic: {
+      provider: () => new HDWalletProvider(mnemonic, `https://polygon-mainnet.infura.io/v3/${infura}`),
+      network_id: 137,
+      skipDryRun: false,
+      production: true
+    }
     // private: {
     // provider: () => new HDWalletProvider(mnemonic, `https://network.io`),
     // network_id: 2111,   // This network is yours, in the cloud.
