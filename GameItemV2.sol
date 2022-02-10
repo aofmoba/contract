@@ -1,4 +1,5 @@
-pragma solidity ^0.8.0;
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.7.0 <0.9.0;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
@@ -14,32 +15,30 @@ import "./IGameItem.sol";
 contract GameItems is ERC1155, IGameItem {
 
    //道具结构体
-    struct gamePrope{
-        uint256 gId;
-        uint64 propeType;  //道具种类，支援卡,特殊招式等
-        uint64 price;   // 更改：道具等级为道具价格
-        string name;
+  struct gamePrope{
+      uint256 gId;
+      uint64 propeType;  //道具种类，支援卡,特殊招式等
+      uint64 price;   // 更改：道具等级为道具价格
+      string name;
         
     }
 
-
-
-    gamePrope[] public gamePropeArray;
-    address public owner;
-    address public LOB;
-    string  private URI_PREFIX = "https://cyberpop.mypinata.cloud/ipfs/";
-    bool _notEntered = true;
+  gamePrope[] public gamePropeArray;
+  address public owner;
+  address public usdt;
+  string  private URI_PREFIX = "https://cyberpop.mypinata.cloud/ipfs/";
+  bool _notEntered = true;
 
    using Counters for Counters.Counter;
    Counters.Counter private _tokenIds;
 
   event createGamePropeEvent(address indexed  player,uint256 tokenId,string  name,uint64 propeType,uint64 price,string  tokenURI);
-   
+  event purchaseGoodsEvent(address from,address to,uint256 tokenId,uint256 price);
   event updateGamePropeEVent();
 
-   constructor(address LOB_) ERC1155("https://cyberpop.mypinata.cloud/ipfs/{id}.json") {
+   constructor(address usdt_) ERC1155("https://cyberpop.mypinata.cloud/ipfs/{id}.json") {
          owner = _msgSender();
-         LOB = LOB_;
+         usdt = usdt_;
    }
     
      modifier onlyOwner(){
@@ -74,7 +73,7 @@ contract GameItems is ERC1155, IGameItem {
     /*
     *方法作用:返回总共发行的tokenId
     */
-    function totalSupply() view public returns(uint256 totalSupply){
+    function numOptions() view public returns(uint256 totalSupply){
         return _tokenIds.current();
     }
 
@@ -129,8 +128,9 @@ contract GameItems is ERC1155, IGameItem {
     */
     function purchaseGoods(address from,address to,uint256 tokenId,uint256 price) override checkGamesPrice(tokenId,price) public nonReentrant{
         require(tokenId>=0,"tokenId: input value is not valid");
-        IERC20(LOB).transferFrom(to,from,price);
+        IERC20(usdt).transferFrom(to,from,price);
         safeTransferFrom(from,to,tokenId,1,"0x"); //转账nft给玩家,  "0x"data数据后面再改出来
+        emit purchaseGoodsEvent(from,to,tokenId,price);
     }
 
    //显示装备,该方法前期仅做测试用
