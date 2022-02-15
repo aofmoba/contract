@@ -89,7 +89,6 @@ contract GameItems is ERC1155,IGameItem,AccessControl{
         return tokenId;
     }
 
-
     /* 方法作用：批量创建多个nft宝物
      * 参数含义: 1) player：玩家钱包地址 2) name[]:道具名子 3）tokensUrl:对应代币的url
      * 4) length 需要为玩家创建多少个nft 5) propeType[] 道具对应的类型（招式或者支援卡） 6) price:道具等级
@@ -113,14 +112,6 @@ contract GameItems is ERC1155,IGameItem,AccessControl{
   function supportsInterface(bytes4 interfaceId) public view virtual override(ERC1155, AccessControl) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
-
-  function balanceOf_(address account, uint256 id) public view  override returns (uint256) {
-        return super.balanceOf(account,id);
-    }
-
-  function safeTransferFrom_(address from,address to,uint256 id,uint256 amount, bytes memory data) external override {
-      super.safeTransferFrom(from,to,id,amount,data);
-  } 
 
   function showPropePrice(uint256 tokenId) external override view returns(uint256) {
     return gamePropeArray[tokenId-1].price;

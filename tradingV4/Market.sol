@@ -3,7 +3,6 @@ pragma solidity >=0.7.0 <0.9.0;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import "./IGameItem.sol";
 import "./IMarket.sol";
 contract market is IMarket {
     
@@ -26,9 +25,9 @@ contract market is IMarket {
 
 
     modifier propeOwner(address account,uint256 tokenId,uint256 amount){
-        require(IGameItem(gamePropeAddress).balanceOf_(account,tokenId)>= amount,"Wrong amount");
+        require(IERC1155(gamePropeAddress).balanceOf(account,tokenId)>= amount,"Wrong amount");
         _;
-        require(balancePropeCreators[tokenId][msg.sender] <= IGameItem(gamePropeAddress).balanceOf_(account,tokenId),"Insufficient balance of your prope");
+        require(balancePropeCreators[tokenId][msg.sender] <= IERC1155(gamePropeAddress).balanceOf(account,tokenId),"Insufficient balance of your prope");
     }
 
     event purchaseGoodsEvent(address from,address to,uint256 tokenId,uint256 amount,uint256 price);
@@ -55,9 +54,9 @@ contract market is IMarket {
         require(tokenSupply[tokenId]>=0,"this prope is been sold");
         tokenSupply[tokenId] =  tokenSupply[tokenId] - amount; //? 
         balancePropeCreators[tokenId][from] = balancePropeCreators[tokenId][from] - amount;
-        IERC20(usdt).transferFrom(to,from,price);
-        IGameItem(gamePropeAddress).safeTransferFrom_(from,to,tokenId,amount,"0x"); //转账nft给玩家,  "0x"data数据后面再改出来
-        require(tokenSupply[tokenId]>=0,"There are not enough props on the market");
+        IERC20(usdt).transferFrom(to,from,price * amount);
+        IERC1155(gamePropeAddress).safeTransferFrom(from,to,tokenId,amount,"0x"); //转账nft给玩家,  "0x"data数据后面再改出来
+        require(tokenSupply[tokenId]>0,"There are not enough props on the market");
         emit purchaseGoodsEvent(from,to,tokenId,amount,price);
     }
 
