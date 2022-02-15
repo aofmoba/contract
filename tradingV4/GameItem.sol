@@ -78,7 +78,6 @@ contract GameItems is ERC1155,IGameItem,AccessControl{
      * 参数返回: tokendId: uint256
     */
     function createGamePrope(address player,string memory name,string memory tokenUrl,uint256 tokenId,uint256 amount,uint64 propeType,uint64 price,bytes memory data)
-        onlyOwner
         public
         nonReentrant
         returns (uint256){
@@ -99,7 +98,6 @@ contract GameItems is ERC1155,IGameItem,AccessControl{
     function batchCreateGamePrope(address player,string[] memory name,string[] memory tokensUrl,uint256 [] memory tokenIds,uint256[] memory amounts,uint64 length,uint64[] memory propeType,uint64[] memory price,bytes memory data)
      public
      nonReentrant
-     onlyOwner
      returns(uint256[] memory tokendIds) {
         require(length == tokensUrl.length && propeType.length == tokensUrl.length && name.length == propeType.length && propeType.length == price.length,"Array lengths do not match");
         require(hasRole(minterRole, msg.sender), "Caller is not a minter");
