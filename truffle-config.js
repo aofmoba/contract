@@ -81,6 +81,12 @@ module.exports = {
       network_id: 137,
       skipDryRun: false,
       production: true
+    },
+    rinkeby: {
+      provider: () => new HDWalletProvider(mnemonic, `https://rinkeby.infura.io/v3/${infura}`),
+      network_id: 4,
+      skipDryRun: true,
+      production: false
     }
     // private: {
     // provider: () => new HDWalletProvider(mnemonic, `https://network.io`),

@@ -2,7 +2,7 @@
 pragma solidity ^0.8.2;
 
 import "@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155Upgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC1155/extensions/ERC1155SupplyUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
@@ -11,20 +11,28 @@ import "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
 contract CyberPopBadge is
     Initializable,
     ERC1155Upgradeable,
-    OwnableUpgradeable,
+    AccessControlUpgradeable,
     ERC1155SupplyUpgradeable,
     UUPSUpgradeable
 {
     uint256 private _numOptions;
 
+    bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
+
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() initializer {}
 
+    function __CyberPopBadge_init() private {
+        _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
+        _setupRole(MINTER_ROLE, _msgSender());
+    }
+
     function initialize() public initializer {
-        __ERC1155_init("https://api.cyberpop.online/server/");
-        __Ownable_init();
+        __ERC1155_init("https://api.cyberpop.online/badge/");
+        __AccessControl_init();
         __ERC1155Supply_init();
         __UUPSUpgradeable_init();
+        __CyberPopBadge_init();
         _numOptions = 2;
     }
 
@@ -81,7 +89,7 @@ contract CyberPopBadge is
         uint256 id,
         uint256 amount,
         bytes memory data
-    ) public onlyOwner {
+    ) public onlyMinter {
         _mint(account, id, amount, data);
     }
 
@@ -90,8 +98,28 @@ contract CyberPopBadge is
         uint256[] memory ids,
         uint256[] memory amounts,
         bytes memory data
-    ) public onlyOwner {
+    ) public onlyMinter {
         _mintBatch(to, ids, amounts, data);
+    }
+
+    /**
+     * @dev Throws if called by any account other than the owner nor the minter.
+     */
+    modifier onlyMinter() {
+        require(
+            hasRole(MINTER_ROLE, _msgSender()) ||
+                hasRole(DEFAULT_ADMIN_ROLE, _msgSender()),
+            "CyberPopBadge: caller is not the owner nor the minter"
+        );
+        _;
+    }
+
+    modifier onlyOwner() {
+        require(
+            hasRole(DEFAULT_ADMIN_ROLE, _msgSender()),
+            "CyberPopBadge: caller is not admin"
+        );
+        _;
     }
 
     function _authorizeUpgrade(address newImplementation)
@@ -111,5 +139,14 @@ contract CyberPopBadge is
         bytes memory data
     ) internal override(ERC1155Upgradeable, ERC1155SupplyUpgradeable) {
         super._beforeTokenTransfer(operator, from, to, ids, amounts, data);
+    }
+
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        override(ERC1155Upgradeable, AccessControlUpgradeable)
+        returns (bool)
+    {
+        return super.supportsInterface(interfaceId);
     }
 }
