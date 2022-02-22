@@ -1,5 +1,6 @@
 const CyberPopBadge = artifacts.require("CyberPopBadge");
 const { deployProxy } = require('@openzeppelin/truffle-upgrades');
+const { expectRevert } = require("@openzeppelin/test-helpers");
 
 /*
  * uncomment accounts to access the test accounts made available by the
@@ -40,4 +41,20 @@ contract("CyberPopBadge", function (accounts) {
     balance = await badge.balanceOf(userA, 0)
     assert.equal(balance.toNumber(), 100)
   })
+
+  it("allows authorized account to burn tokens", async () => {
+    let userA = accounts[2]
+    let userB = accounts[3]
+    await badge.mint(userA, 1, 10, "0x")
+
+    await expectRevert(badge.burn(userA, 1, 10, { from: userB }), "ERC1155: caller is not authorized to burn token")
+
+    let burner_role = await badge.BURNER_ROLE()
+    await badge.grantRole(burner_role.toString(), userB)
+    await badge.burn(userA, 1, 10, { from: userB })
+
+    let balance = await badge.balanceOf(userA, 1)
+    assert.equal(balance.toNumber(), 0)
+  })
+
 });

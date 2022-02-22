@@ -1,11 +1,7 @@
 const Cyborg = artifacts.require("Cyborg");
 const { deployProxy } = require('@openzeppelin/truffle-upgrades');
+const { expectRevert } = require("@openzeppelin/test-helpers");
 
-/*
- * uncomment accounts to access the test accounts made available by the
- * Ethereum client
- * See docs: https://www.trufflesuite.com/docs/truffle/testing/writing-tests-in-javascript
- */
 contract("Cyborg", function (accounts) {
   let cyborg;
   let minterRole;
@@ -44,5 +40,19 @@ contract("Cyborg", function (accounts) {
   it("returns correct meta uri", async () => {
     let uri = await cyborg.tokenURI(100)
     assert.equal("https://api.cyberpop.online/server/100", uri)
+  })
+
+  it("allows authorized account to burn tokens", async () => {
+    let userA = accounts[2]
+    let userB = accounts[3]
+    await cyborg.safeMint(userA, 1)
+
+    await expectRevert(cyborg.burn(1, { from: userB }), "ERC721: caller is not authorized to burn token")
+
+    let burner_role = await cyborg.BURNER_ROLE()
+    await cyborg.grantRole(burner_role.toString(), userB)
+    await cyborg.burn(1, { from: userB })
+
+    await expectRevert(cyborg.ownerOf(1), "revert ERC721: owner query for nonexistent token")
   })
 });

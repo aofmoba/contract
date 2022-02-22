@@ -18,6 +18,7 @@ contract CyberPopBadge is
     uint256 private _numOptions;
 
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
+    bytes32 public constant BURNER_ROLE = keccak256("BURNER_ROLE");
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() initializer {}
@@ -25,6 +26,7 @@ contract CyberPopBadge is
     function __CyberPopBadge_init() private {
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
         _setupRole(MINTER_ROLE, _msgSender());
+        _setupRole(BURNER_ROLE, _msgSender());
     }
 
     function initialize() public initializer {
@@ -100,6 +102,21 @@ contract CyberPopBadge is
         bytes memory data
     ) public onlyMinter {
         _mintBatch(to, ids, amounts, data);
+    }
+
+    function burn(
+        address account,
+        uint256 id,
+        uint256 value
+    ) public virtual {
+        require(
+            account == _msgSender() ||
+                isApprovedForAll(account, _msgSender()) ||
+                hasRole(BURNER_ROLE, _msgSender()),
+            "ERC1155: caller is not authorized to burn token"
+        );
+
+        _burn(account, id, value);
     }
 
     /**
