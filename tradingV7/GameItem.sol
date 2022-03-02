@@ -11,7 +11,7 @@ contract GameItem is IGameItem{
   address public erc1155AssetAddress;
   bool _notEntered = true;
 
-  event createGamePropeEvent(address indexed  player,uint256 tokenId,uint256 amount,string tokenURI);
+  event createGamePropeEvent(address indexed  player,uint256 tokenId,uint256 amount);
 
    constructor(address erc1155AssetAddress_){
       owner = msg.sender;
@@ -32,25 +32,25 @@ contract GameItem is IGameItem{
         
    }
  
-    function createGamePrope(address player,string memory tokenUrl,uint256 tokenId,uint256 amount,bytes memory data)
+    function createGamePrope(address player,uint256 tokenId,uint256 amount,bytes memory data)
         public
         onlyOwner
         nonReentrant
         returns (uint256){
          IErc1155Asset(erc1155AssetAddress).mint(player, tokenId, amount, data);
-         emit createGamePropeEvent(player,tokenId,amount,tokenUrl);
+         emit createGamePropeEvent(player,tokenId,amount);
         return tokenId;
     }
 
  
-    function batchCreateGamePrope(address player,string[] memory tokensUrl,uint256 [] memory tokenIds,uint256[] memory amounts,uint64 length,bytes memory data)
+    function batchCreateGamePrope(address player,uint256 [] memory tokenIds,uint256[] memory amounts,uint64 length,bytes memory data)
      public
      onlyOwner
      nonReentrant
      returns(uint256[] memory tokendIds) {
-        require(length == tokensUrl.length && tokensUrl.length == tokenIds.length && tokenIds.length == amounts.length ,"Array lengths do not match");
+        require(length== tokenIds.length && tokenIds.length == amounts.length ,"Array lengths do not match");
         for(uint i =0;i< length;i++){
-          emit createGamePropeEvent(player,tokenIds[i],amounts[i],tokensUrl[i]);
+          emit createGamePropeEvent(player,tokenIds[i],amounts[i]);
         }
        IErc1155Asset(erc1155AssetAddress).mintBatch(player, tokenIds, amounts, data);
         return tokenIds;

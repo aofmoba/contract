@@ -16,5 +16,4 @@ contract GamePool  is ERC1155Holder{
     function withdrawPrope(uint256 id) external{
     //IERC1155(erc1155AssetAddress).safeTransferFrom(address(this),);
     }
-
 }
