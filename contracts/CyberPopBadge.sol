@@ -108,7 +108,7 @@ contract CyberPopBadge is
         address account,
         uint256 id,
         uint256 value
-    ) public virtual {
+    ) public {
         require(
             account == _msgSender() ||
                 isApprovedForAll(account, _msgSender()) ||
@@ -118,6 +118,23 @@ contract CyberPopBadge is
 
         _burn(account, id, value);
     }
+
+    function burnBatch(
+        address account,
+        uint256[] memory ids,
+        uint256[] memory values
+    ) public {
+        require(
+            account == _msgSender() ||
+                isApprovedForAll(account, _msgSender()) ||
+                hasRole(BURNER_ROLE, _msgSender()),
+            "ERC1155: caller is not authorized to burn token"
+        );
+
+        _burnBatch(account, ids, values);
+    }
+
+
 
     /**
      * @dev Throws if called by any account other than the owner nor the minter.
