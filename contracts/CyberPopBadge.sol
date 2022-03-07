@@ -50,7 +50,10 @@ contract CyberPopBadge is
         return _numOptions;
     }
 
-    function setNumOptions(uint256 options) public onlyOwner {
+    function setNumOptions(uint256 options)
+        public
+        onlyRole(DEFAULT_ADMIN_ROLE)
+    {
         _numOptions = options;
     }
 
@@ -82,7 +85,7 @@ contract CyberPopBadge is
             );
     }
 
-    function setURI(string memory newuri) public onlyOwner {
+    function setURI(string memory newuri) public onlyRole(DEFAULT_ADMIN_ROLE) {
         _setURI(newuri);
     }
 
@@ -91,7 +94,7 @@ contract CyberPopBadge is
         uint256 id,
         uint256 amount,
         bytes memory data
-    ) public onlyMinter {
+    ) public onlyRole(MINTER_ROLE) {
         _mint(account, id, amount, data);
     }
 
@@ -100,7 +103,7 @@ contract CyberPopBadge is
         uint256[] memory ids,
         uint256[] memory amounts,
         bytes memory data
-    ) public onlyMinter {
+    ) public onlyRole(MINTER_ROLE) {
         _mintBatch(to, ids, amounts, data);
     }
 
@@ -134,32 +137,10 @@ contract CyberPopBadge is
         _burnBatch(account, ids, values);
     }
 
-
-
-    /**
-     * @dev Throws if called by any account other than the owner nor the minter.
-     */
-    modifier onlyMinter() {
-        require(
-            hasRole(MINTER_ROLE, _msgSender()) ||
-                hasRole(DEFAULT_ADMIN_ROLE, _msgSender()),
-            "CyberPopBadge: caller is not the owner nor the minter"
-        );
-        _;
-    }
-
-    modifier onlyOwner() {
-        require(
-            hasRole(DEFAULT_ADMIN_ROLE, _msgSender()),
-            "CyberPopBadge: caller is not admin"
-        );
-        _;
-    }
-
     function _authorizeUpgrade(address newImplementation)
         internal
         override
-        onlyOwner
+        onlyRole(DEFAULT_ADMIN_ROLE)
     {}
 
     // The following functions are overrides required by Solidity.

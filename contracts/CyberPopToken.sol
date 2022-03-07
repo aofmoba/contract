@@ -17,7 +17,10 @@ contract CyberPopToken is
     bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
-    constructor() ERC20("CyberPopToken", "CYT") ERC20Capped(120_000_000) {
+    constructor()
+        ERC20("CyberPopToken", "CYT")
+        ERC20Capped(120_000_000_000_000) // capped at 120m
+    {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(PAUSER_ROLE, msg.sender);
         _mint(msg.sender, 10000 * 10**decimals());
