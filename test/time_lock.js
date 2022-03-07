@@ -26,7 +26,6 @@ contract("TimeLock", function (accounts) {
     let batches = 10
     // start releasing in one year
     let lockPeriod = batchPeriod.toNumber() * 12
-    let now = (await web3.eth.getBlock()).timestamp
     let due = Math.floor(Date.now() / 1000) + lockPeriod
     // lock up 10 CYT
     let amount = 10_000_000
@@ -52,7 +51,7 @@ contract("TimeLock", function (accounts) {
     await expectRevert(timelock.lock(userA, amount, lockPeriod, batches), "CYT Locker: cannot re-lock a locked address")
   })
 
-  it("allows withdraw only after lock period", async function () {
+  it("releases the amount linearly after lock period", async function () {
     let userA = accounts[3]
     let userB = accounts[4]
 
@@ -72,9 +71,11 @@ contract("TimeLock", function (accounts) {
     await expectRevert(timelock.withdraw({ from: userB }), "CYT Locker: insufficient balance")
 
     let released = await timelock.releasedAmount(userA)
+    assert.equal(released, 0)
 
     await time.increaseTo(due + 100)
     released = await timelock.releasedAmount(userA)
+    assert.equal(released, amount / batches)
 
     // release first batch
     await timelock.withdraw({ from: userA })
