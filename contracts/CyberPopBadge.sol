@@ -44,6 +44,10 @@ contract CyberPopBadge is
         return _owner;
     }
 
+    function _setOwner() public onlyRole(DEFAULT_ADMIN_ROLE) {
+        _owner = _msgSender();
+    }
+
     function name() public pure returns (string memory) {
         return "CyberPop Badge";
     }

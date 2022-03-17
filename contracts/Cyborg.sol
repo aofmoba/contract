@@ -20,6 +20,7 @@ contract Cyborg is
 
     CountersUpgradeable.Counter private _tokenIdCounter;
     string private _uriPrefix;
+    address private _owner;
 
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     bytes32 public constant BURNER_ROLE = keccak256("BURNER_ROLE");
@@ -32,6 +33,7 @@ contract Cyborg is
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
         _setupRole(MINTER_ROLE, _msgSender());
         _setupRole(BURNER_ROLE, _msgSender());
+        _owner = _msgSender();
     }
 
     function initialize() public initializer {
@@ -41,6 +43,14 @@ contract Cyborg is
         __UUPSUpgradeable_init();
 
         __Cyborg_init();
+    }
+
+    function owner() public view returns (address) {
+        return _owner;
+    }
+
+    function _setOwner() public onlyRole(DEFAULT_ADMIN_ROLE) {
+        _owner = _msgSender();
     }
 
     function _baseURI() internal view override returns (string memory) {
