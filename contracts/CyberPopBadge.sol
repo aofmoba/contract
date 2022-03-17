@@ -16,6 +16,7 @@ contract CyberPopBadge is
     UUPSUpgradeable
 {
     uint256 private _numOptions;
+    address private _owner;
 
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     bytes32 public constant BURNER_ROLE = keccak256("BURNER_ROLE");
@@ -27,6 +28,7 @@ contract CyberPopBadge is
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
         _setupRole(MINTER_ROLE, _msgSender());
         _setupRole(BURNER_ROLE, _msgSender());
+        _owner = _msgSender();
     }
 
     function initialize() public initializer {
@@ -36,6 +38,10 @@ contract CyberPopBadge is
         __UUPSUpgradeable_init();
         __CyberPopBadge_init();
         _numOptions = 2;
+    }
+
+    function owner() public view returns (address) {
+        return _owner;
     }
 
     function name() public pure returns (string memory) {
