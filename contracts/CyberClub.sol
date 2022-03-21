@@ -7,12 +7,7 @@ import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
-contract CyberClub is
-    ERC721,
-    ERC721Enumerable,
-    Pausable,
-    Ownable,
-{
+contract CyberClub is ERC721, ERC721Enumerable, Pausable, Ownable {
     using Counters for Counters.Counter;
 
     Counters.Counter private _tokenIdCounter;
@@ -35,6 +30,14 @@ contract CyberClub is
         uint256 tokenId = _tokenIdCounter.current();
         _tokenIdCounter.increment();
         _safeMint(to, tokenId);
+    }
+
+    function batchMint(address to, uint256 numTokens) public onlyOwner {
+        for (uint256 i = 0; i < numTokens; i++) {
+            uint256 tokenId = _tokenIdCounter.current();
+            _tokenIdCounter.increment();
+            _safeMint(to, tokenId);
+        }
     }
 
     /**
