@@ -99,15 +99,15 @@ contract Cyborg is
     /**
      * @dev Returns all the token IDs owned by address
      */
-    function tokensOfOwner(address owner)
+    function tokensOfOwner(address _addr)
         external
         view
         returns (uint256[] memory)
     {
-        uint256 balance = balanceOf(owner);
+        uint256 balance = balanceOf(_addr);
         uint256[] memory tokens = new uint256[](balance);
         for (uint256 i = 0; i < balance; i++) {
-            tokens[i] = tokenOfOwnerByIndex(owner, i);
+            tokens[i] = tokenOfOwnerByIndex(_addr, i);
         }
 
         return tokens;
