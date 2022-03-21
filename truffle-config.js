@@ -92,6 +92,11 @@ module.exports = {
       network_id: 4,
       skipDryRun: true,
       production: false
+    },
+    fuji: {
+      provider: () => new HDWalletProvider(mnemonic, `https://api.avax-test.network/ext/bc/C/rpc`),
+      network_id: "43113",   // This network is yours, in the cloud.
+      production: false    // Treats this network as if it was a public net. (default: false)
     }
     // private: {
     // provider: () => new HDWalletProvider(mnemonic, `https://network.io`),
@@ -119,6 +124,12 @@ module.exports = {
       // }
     }
   },
+  plugins: ['truffle-plugin-verify'],
+  api_keys: {
+    etherscan: 'F1CQWDC3S8XNTAWG7CFM9A55P9ZPUJF6MC',
+    polygonscan: 'DC6ZRWH1QUT2GDIX9VMZP1YEUPTVYYA1QS',
+    snowtrace: '9P25TAF4WCCX7N78X11WJD3N6C39ADEJEK'
+  }
 
   // Truffle DB is currently disabled by default; to enable it, change enabled:
   // false to enabled: true. The default storage location can also be
