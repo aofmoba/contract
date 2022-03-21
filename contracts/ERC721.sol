@@ -20,6 +20,8 @@ contract ERC721 is Context, ERC165, IERC721, IERC721Metadata {
     using Address for address;
     using Strings for uint256;
 
+    uint256 public totalSupply = 1;
+
     // Token name
     string private _name;
 
@@ -337,6 +339,25 @@ contract ERC721 is Context, ERC165, IERC721, IERC721Metadata {
             _checkOnERC721Received(address(0), to, tokenId, _data),
             "ERC721: transfer to non ERC721Receiver implementer"
         );
+    }
+
+    /**
+     * @dev Mints `numTokens` to `to` in batch
+     */
+    function _batchMint(address to, uint256 numTokens) internal {
+        uint256 _totalSupply = totalSupply;
+        unchecked {
+            _totalSupply--;
+            uint256 tokenId = _totalSupply;
+            for (; tokenId < numTokens + _totalSupply; tokenId++) {
+                _owners[tokenId] = to;
+
+                emit Transfer(address(0), to, tokenId);
+            }
+            tokenId++;
+            _balances[to] += numTokens;
+            totalSupply = tokenId;
+        }
     }
 
     /**

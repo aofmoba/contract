@@ -7,10 +7,8 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
 contract CyberClub is ERC721, Pausable, Ownable {
-    uint256 private _tokenIdCounter;
-
     constructor() ERC721("Cyber Club", "CBC") {
-        _tokenIdCounter = 0;
+        totalSupply = 1;
     }
 
     function _baseURI() internal pure override returns (string memory) {
@@ -26,22 +24,16 @@ contract CyberClub is ERC721, Pausable, Ownable {
     }
 
     function safeMint(address to) public onlyOwner {
-        uint256 tokenId = _tokenIdCounter;
+        uint256 tokenId = totalSupply - 1;
         _safeMint(to, tokenId);
         unchecked {
-            _tokenIdCounter += 1;
+            tokenId++;
         }
+        totalSupply = tokenId;
     }
 
-    function batchMint(address to, uint256 numTokens) public onlyOwner {
-        for (
-            uint256 tokenId = _tokenIdCounter;
-            tokenId < numTokens + _tokenIdCounter;
-            tokenId++
-        ) {
-            _unsafeMint(to, tokenId);
-        }
-        _tokenIdCounter += numTokens;
+    function batchMint(address to, uint256 numTokens) external onlyOwner {
+        _batchMint(to, numTokens);
     }
 
     function _beforeTokenTransfer(
