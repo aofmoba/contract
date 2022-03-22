@@ -69,7 +69,7 @@ contract TimeLock is Ownable {
             lockedAmount == 0,
             "CYT Locker: cannot re-lock a locked address"
         );
-        CyberPopToken(token).mint(address(this), _amount);
+        CyberPopToken(token).transferFrom(msg.sender, address(this), _amount);
         lockedBalances[_sender].lockedAmount = _amount;
         lockedBalances[_sender].releaseBatches = _batches;
         lockedBalances[_sender].lockTimestamp = block.timestamp.add(

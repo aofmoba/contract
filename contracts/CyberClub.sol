@@ -7,9 +7,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
 contract CyberClub is ERC721, Pausable, Ownable {
-    constructor() ERC721("Cyber Club", "CBC") {
-        totalSupply = 1;
-    }
+    constructor() ERC721("Cyber Club", "CBC") {}
 
     function _baseURI() internal pure override returns (string memory) {
         return "https://api.cyberpop.online/head/";
