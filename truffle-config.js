@@ -75,6 +75,11 @@ module.exports = {
     // skipDryRun: true     // Skip dry run before migrations? (default: false for public nets )
     // },
     // Useful for private networks
+    mainnet: {
+      provider: () => new HDWalletProvider(mnemonic, `https://mainnet.infura.io/v3/${infura}`),
+      network_id: 1,
+      production: true,
+    },
     mumbai: {
       provider: () => new HDWalletProvider(mnemonic, `https://polygon-mumbai.infura.io/v3/${infura}`),
       network_id: 80001,
