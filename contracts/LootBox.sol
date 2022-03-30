@@ -11,26 +11,15 @@ import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Burnable.sol";
 contract LootBox is ERC1155, ERC1155Burnable, AccessControl {
     using LootBoxRandomness for LootBoxRandomness.LootBoxRandomnessState;
     LootBoxRandomness.LootBoxRandomnessState private state;
-    address private feeReceiver;
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
-    bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
 
     constructor() ERC1155("https://api.cyberpop.online/box/") {
-        _setupRole(ADMIN_ROLE, msg.sender);
-        _setRoleAdmin(MINTER_ROLE, ADMIN_ROLE);
-        _setRoleAdmin(ADMIN_ROLE, ADMIN_ROLE);
+        _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        _setupRole(MINTER_ROLE, msg.sender);
     }
 
-    function setURI(string memory newuri) public onlyRole(ADMIN_ROLE) {
+    function setURI(string memory newuri) public onlyRole(DEFAULT_ADMIN_ROLE) {
         _setURI(newuri);
-    }
-
-    function setFeeReceiver(address _feeReceiver) public onlyRole(ADMIN_ROLE) {
-        feeReceiver = _feeReceiver;
-    }
-
-    function getFeeReceiver() public view returns (address) {
-        return feeReceiver;
     }
 
     ///////
@@ -87,32 +76,32 @@ contract LootBox is ERC1155, ERC1155Burnable, AccessControl {
         uint256 _numOptions,
         uint256 _numClasses,
         uint256 _seed
-    ) public onlyRole(ADMIN_ROLE) {
+    ) public onlyRole(DEFAULT_ADMIN_ROLE) {
         LootBoxRandomness.initState(state, _numOptions, _numClasses, _seed);
     }
 
     function setTokenIdsForClass(uint256 _classId, uint256[] memory _tokenIds)
         public
-        onlyRole(ADMIN_ROLE)
+        onlyRole(DEFAULT_ADMIN_ROLE)
     {
         LootBoxRandomness.setTokenIdsForClass(state, _classId, _tokenIds);
     }
 
     function setFactoryForClass(uint256 _classId, address _factoryAddress)
         public
-        onlyRole(ADMIN_ROLE)
+        onlyRole(DEFAULT_ADMIN_ROLE)
     {
         LootBoxRandomness.setFactoryForClass(state, _classId, _factoryAddress);
     }
 
-    function setSeed(uint256 _seed) public onlyRole(ADMIN_ROLE) {
+    function setSeed(uint256 _seed) public onlyRole(DEFAULT_ADMIN_ROLE) {
         LootBoxRandomness.setSeed(state, _seed);
     }
 
     function setProbabilitiesForOption(
         uint256 _optionId,
         uint16[] memory _probabilities
-    ) public onlyRole(ADMIN_ROLE) {
+    ) public onlyRole(DEFAULT_ADMIN_ROLE) {
         LootBoxRandomness.setProbabilitiesForOption(
             state,
             _optionId,

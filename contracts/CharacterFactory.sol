@@ -39,8 +39,11 @@ contract CharacterFactory is AccessControl, IERC1155Factory, RNG {
     ) public override onlyRole(MINTER_ROLE) {
         require(_amount == 1, "cannot mint more than 1");
         uint256 id = _tokenIdCounter.current();
-        uint256 rng = (_random() % charTypes.length) * 100000;
-        Cyborg(cyberChar).safeMint(_to, _level + charTypes[rng] + id);
+        uint256 rng = (_random() % charTypes.length);
+        Cyborg(cyberChar).safeMint(
+            _to,
+            _level * 100000_00000 + charTypes[rng] * 100000 + id
+        );
         _tokenIdCounter.increment();
     }
 }

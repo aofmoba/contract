@@ -17,15 +17,22 @@ module.exports = async (deployer, network, accounts) => {
   const lootbox = await LootBox.deployed()
   const cyborg = await Cyborg.deployed()
 
-  console.log(cyborg.address)
   await deployer.deploy(CyberClubFactory, club.address, lootbox.address, badge.address)
   await deployer.deploy(CharacterFactory, cyborg.address)
 
   const charFactory = await CharacterFactory.deployed()
-  const cyberClubFactory = await CyberClubFactory.deployed()
+  let minter = await cyborg.MINTER_ROLE()
+  await cyborg.grantRole(minter, charFactory.address);
 
-  const minter = await charFactory.MINTER_ROLE()
+  const cyberClubFactory = await CyberClubFactory.deployed()
   await cyberClubFactory.transferOwnership(lootbox.address)
+  minter = await badge.MINTER_ROLE()
+  await badge.grantRole(minter, cyberClubFactory.address);
+
+  minter = await club.MINTER_ROLE()
+  await club.grantRole(minter, cyberClubFactory.address);
+
+  minter = await charFactory.MINTER_ROLE()
   await charFactory.grantRole(minter, lootbox.address)
 
   await setupLootBox(lootbox, cyberClubFactory, charFactory);
