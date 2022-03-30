@@ -14,16 +14,14 @@ contract CharacterFactory is AccessControl, IERC1155Factory, RNG {
     Counters.Counter private _tokenIdCounter;
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
-    Cyborg private cyberChar;
+    address private cyberChar;
 
-    uint256[] private charTypes;
-
-    // event HouseBuilt(address indexed to, uint256 optionId, uint256 tokenId);
+    uint256[] private charTypes = [70201, 70101];
 
     constructor(address _nftAddress) {
-        cyberChar = Cyborg(_nftAddress);
-        grantRole(MINTER_ROLE, _msgSender());
-        charTypes = [70201, 70101];
+        cyberChar = _nftAddress;
+        _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
+        _setupRole(MINTER_ROLE, _msgSender());
     }
 
     function setCharTypes(uint256[] memory newTypes)
@@ -42,7 +40,7 @@ contract CharacterFactory is AccessControl, IERC1155Factory, RNG {
         require(_amount == 1, "cannot mint more than 1");
         uint256 id = _tokenIdCounter.current();
         uint256 rng = (_random() % charTypes.length) * 100000;
-        cyberChar.safeMint(_to, _level + charTypes[rng] + id);
+        Cyborg(cyberChar).safeMint(_to, _level + charTypes[rng] + id);
         _tokenIdCounter.increment();
     }
 }
