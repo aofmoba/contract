@@ -6,8 +6,9 @@ import "./CyberClub.sol";
 import "./CyberPopBadge.sol";
 import "./LootBox.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
+import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Receiver.sol";
 
-contract CyberClubFactory is AccessControl, IERC1155Factory {
+contract CyberClubFactory is AccessControl, IERC1155Factory, ERC1155Receiver {
     CyberClub private char;
     // Russian doll lootbox
     LootBox private lootbox;
@@ -70,5 +71,14 @@ contract CyberClubFactory is AccessControl, IERC1155Factory {
         );
         // comsumerable.mint(_to, 0, 1, _data);
         // comsumerable.mint(_to, 2, 5, _data);
+    }
+
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        override(AccessControl, ERC1155Receiver)
+        returns (bool)
+    {
+        return super.supportsInterface(interfaceId);
     }
 }
