@@ -22,6 +22,16 @@ contract LootBox is ERC1155, ERC1155Burnable, AccessControl {
         _setURI(newuri);
     }
 
+    function uri(uint256 _tokenId)
+        public
+        view
+        override
+        returns (string memory)
+    {
+        string memory uri_prefix = super.uri(_tokenId);
+        return string(abi.encodePacked(uri_prefix, Strings.toString(_tokenId)));
+    }
+
     ///////
     // MAIN FUNCTIONS
     //////
