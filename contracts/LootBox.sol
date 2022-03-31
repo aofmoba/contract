@@ -18,6 +18,14 @@ contract LootBox is ERC1155, ERC1155Burnable, AccessControl {
         _setupRole(MINTER_ROLE, msg.sender);
     }
 
+    function name() public pure returns (string memory) {
+        return "CyberPop Loot Box";
+    }
+
+    function symbol() public pure returns (string memory) {
+        return "CLB";
+    }
+
     function setURI(string memory newuri) public onlyRole(DEFAULT_ADMIN_ROLE) {
         _setURI(newuri);
     }

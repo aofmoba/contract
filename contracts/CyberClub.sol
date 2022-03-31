@@ -29,10 +29,7 @@ contract CyberClub is ERC721, Pausable, AccessControl {
     function safeMint(address to) public onlyRole(MINTER_ROLE) {
         uint256 tokenId = totalSupply - 1;
         _safeMint(to, tokenId);
-        unchecked {
-            tokenId++;
-        }
-        totalSupply = tokenId;
+        totalSupply = tokenId + 2;
     }
 
     function batchMint(address to, uint256 numTokens)
