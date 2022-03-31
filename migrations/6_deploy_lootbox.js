@@ -14,13 +14,13 @@ module.exports = async (deployer, network, accounts) => {
   await deployer.deploy(LootBox)
   const lootbox = await LootBox.deployed()
 
-  //const club = await CyberClub.deployed()
-  //const badge = await CyberPopBadge.deployed()
-  //const cyborg = await Cyborg.deployed()
+  const club = await CyberClub.deployed()
+  const badge = await CyberPopBadge.deployed()
+  const cyborg = await Cyborg.deployed()
 
-  const club = await CyberClub.at('0x..')
-  const badge = await CyberPopBadge.at('0x..')
-  const cyborg = await Cyborg.at('0x..')
+  // const club = await CyberClub.at('0x..')
+  // const badge = await CyberPopBadge.at('0x..')
+  // const cyborg = await Cyborg.at('0x..')
 
   await deployer.deploy(CyberClubFactory, club.address, lootbox.address, badge.address)
   await deployer.deploy(CharacterFactory, cyborg.address)
@@ -31,8 +31,8 @@ module.exports = async (deployer, network, accounts) => {
 
   const cyberClubFactory = await CyberClubFactory.deployed()
 
-  // minter = await badge.MINTER_ROLE()
-  // await badge.grantRole(minter, cyberClubFactory.address);
+  minter = await badge.MINTER_ROLE()
+  await badge.grantRole(minter, cyberClubFactory.address);
 
   minter = await club.MINTER_ROLE()
   await club.grantRole(minter, cyberClubFactory.address);

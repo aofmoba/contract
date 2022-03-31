@@ -62,15 +62,14 @@ contract CyberClubFactory is AccessControl, IERC1155Factory, ERC1155Receiver {
         uint256[] memory amounts = new uint256[](2);
         amounts[0] = 1;
         amounts[1] = 5;
-        comsumerable.safeBatchTransferFrom(
-            address(this),
-            _to,
-            ids,
-            amounts,
-            _data
-        );
-        // comsumerable.mint(_to, 0, 1, _data);
-        // comsumerable.mint(_to, 2, 5, _data);
+        // comsumerable.safeBatchTransferFrom(
+        //     address(this),
+        //     _to,
+        //     ids,
+        //     amounts,
+        //     _data
+        // );
+        comsumerable.mintBatch(_to, ids, amounts, _data);
     }
 
     function onERC1155Received(
