@@ -24,6 +24,13 @@ contract CharacterFactory is AccessControl, IERC1155Factory, RNG {
         _setupRole(MINTER_ROLE, _msgSender());
     }
 
+    function setNftAddress(address _address)
+        external
+        onlyRole(DEFAULT_ADMIN_ROLE)
+    {
+        cyberChar = _address;
+    }
+
     function setCharTypes(uint256[] memory newTypes)
         external
         onlyRole(DEFAULT_ADMIN_ROLE)
