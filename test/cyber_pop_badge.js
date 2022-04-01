@@ -1,4 +1,4 @@
-const CyberPopBadge = artifacts.require("CyberPopBadge");
+const CyberpopGame = artifacts.require("CyberpopGame");
 const { deployProxy } = require('@openzeppelin/truffle-upgrades');
 const { expectRevert } = require("@openzeppelin/test-helpers");
 
@@ -7,11 +7,11 @@ const { expectRevert } = require("@openzeppelin/test-helpers");
  * Ethereum client
  * See docs: https://www.trufflesuite.com/docs/truffle/testing/writing-tests-in-javascript
  */
-contract("CyberPopBadge", function (accounts) {
+contract("CyberpopGame", function (accounts) {
   let badge;
   let minterRole;
   before(async () => {
-    badge = await deployProxy(CyberPopBadge)
+    badge = await deployProxy(CyberpopGame)
     minterRole = await badge.MINTER_ROLE()
   })
 

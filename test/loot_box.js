@@ -1,6 +1,6 @@
 const LootBox = artifacts.require("LootBox");
 const CyberClub = artifacts.require("CyberClub");
-const CyberPopBadge = artifacts.require("CyberPopBadge");
+const CyberpopGame = artifacts.require("CyberpopGame");
 const Cyborg = artifacts.require("Cyborg");
 
 /*
@@ -14,7 +14,7 @@ contract("LootBox", function (accounts) {
   before(async () => {
     lootbox = await LootBox.deployed()
     cyberClub = await CyberClub.deployed()
-    badge = await CyberPopBadge.deployed()
+    badge = await CyberpopGame.deployed()
     cyborg = await Cyborg.deployed()
     owner = accounts[0]
     userA = accounts[1]
