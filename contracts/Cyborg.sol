@@ -57,7 +57,7 @@ contract Cyborg is
         return _uriPrefix;
     }
 
-    function setURI(string memory newuri) public onlyOwner {
+    function setURI(string memory newuri) external onlyOwner {
         _uriPrefix = newuri;
     }
 
