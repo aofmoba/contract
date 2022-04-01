@@ -20,7 +20,7 @@ contract("LootBox", function (accounts) {
     cyborg = await Cyborg.deployed()
     owner = accounts[0]
     userA = accounts[1]
-    await lootbox.mintBatch(userA, [0, 1, 2], [1, 1, 1], '0x')
+    await lootbox.mintBatch(userA, [0, 1, 2], [1, 2, 1], '0x')
   })
 
   it("opens Avatar Box", async function () {
@@ -41,6 +41,7 @@ contract("LootBox", function (accounts) {
   })
 
   it("can modify probabitlies", async () => {
-    await lootbox.setProbabilitiesForOption(1, [0, 5000, 5000])
+    await lootbox.setProbabilitiesForOption(1, [0, 9500, 500])
+    await lootbox.unpack(1, 1, { from: userA })
   })
 })

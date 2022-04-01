@@ -3,17 +3,8 @@ const Cyborg = artifacts.require("Cyborg");
 const CyberpopGame = artifacts.require("CyberpopGame");
 const CyberClubFactory = artifacts.require("CyberClubFactory");
 const CharacterFactory = artifacts.require("CharacterFactory");
-const LootBox = artifacts.require("LootBox");
-const LootBoxRandomness = artifacts.require("LootBoxRandomness");
-
-const { setupLootBox } = require("../lib/setupLootboxes");
 
 module.exports = async (deployer, network, accounts) => {
-  await deployer.deploy(LootBoxRandomness);
-  await deployer.link(LootBoxRandomness, LootBox);
-  await deployer.deploy(LootBox)
-  const lootbox = await LootBox.deployed()
-
   const club = await CyberClub.deployed()
   const badge = await CyberpopGame.deployed()
   const cyborg = await Cyborg.deployed()
@@ -22,7 +13,7 @@ module.exports = async (deployer, network, accounts) => {
   // const badge = await CyberpopGame.at('0x..')
   // const cyborg = await Cyborg.at('0x..')
 
-  await deployer.deploy(CyberClubFactory, club.address, lootbox.address, badge.address)
+  await deployer.deploy(CyberClubFactory, club.address, badge.address)
   await deployer.deploy(CharacterFactory, cyborg.address)
 
   const charFactory = await CharacterFactory.deployed()
@@ -34,11 +25,6 @@ module.exports = async (deployer, network, accounts) => {
   minter = await badge.MINTER_ROLE()
   await badge.grantRole(minter, cyberClubFactory.address)
 
-  minter = await lootbox.MINTER_ROLE()
-  await lootbox.grantRole(minter, cyberClubFactory.address)
-
   minter = await club.MINTER_ROLE()
   await club.grantRole(minter, cyberClubFactory.address);
-
-  await setupLootBox(lootbox, cyberClubFactory, charFactory);
 };

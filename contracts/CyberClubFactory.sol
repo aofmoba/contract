@@ -16,13 +16,8 @@ contract CyberClubFactory is AccessControl, IERC1155Factory, ERC1155Receiver {
 
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
-    constructor(
-        address _charAddress,
-        address _lootboxAddress,
-        address _comsumerableAddress
-    ) {
+    constructor(address _charAddress, address _comsumerableAddress) {
         char = CyberClub(_charAddress);
-        lootbox = LootBox(_lootboxAddress);
         comsumerable = CyberpopGame(_comsumerableAddress);
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
         _setupRole(MINTER_ROLE, _msgSender());
@@ -33,6 +28,13 @@ contract CyberClubFactory is AccessControl, IERC1155Factory, ERC1155Receiver {
         onlyRole(DEFAULT_ADMIN_ROLE)
     {
         char = CyberClub(_address);
+    }
+
+    function setLootBox(address _address)
+        external
+        onlyRole(DEFAULT_ADMIN_ROLE)
+    {
+        lootbox = LootBox(_address);
     }
 
     function setCyberpopGame(address _address)
