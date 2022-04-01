@@ -3,6 +3,8 @@ const CyberClub = artifacts.require("CyberClub");
 const CyberpopGame = artifacts.require("CyberpopGame");
 const Cyborg = artifacts.require("Cyborg");
 
+const CyberClubFactory = artifacts.require("CyberClubFactory")
+
 /*
  * uncomment accounts to access the test accounts made available by the
  * Ethereum client
@@ -31,5 +33,14 @@ contract("LootBox", function (accounts) {
 
   it("opens Charater Box", async function () {
     await lootbox.unpack(2, 1, { from: userA })
+  })
+
+  it("can add new option", async () => {
+    let factory = await CyberClubFactory.deployed()
+    await lootbox.addNewOption(factory.address, [10000])
+  })
+
+  it("can modify probabitlies", async () => {
+    await lootbox.setProbabilitiesForOption(1, [0, 5000, 5000])
   })
 })

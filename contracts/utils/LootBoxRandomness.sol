@@ -75,6 +75,19 @@ library LootBoxRandomness {
     }
 
     /**
+     * @dev add new box option
+     */
+    function addNewOption(
+        LootBoxRandomnessState storage _state,
+        address _factoryAddress,
+        uint16[] memory _probabilities
+    ) public {
+        _state.numOptions++;
+        _state.classToFactory[_state.numOptions] = _factoryAddress;
+        _state.classProbabilities[_state.numOptions] = _probabilities;
+    }
+
+    /**
      * Set probilities per class
      */
     function setProbabilitiesForOption(
@@ -82,6 +95,10 @@ library LootBoxRandomness {
         uint256 _optionId,
         uint16[] memory probabilities
     ) public {
+        require(
+            _optionId < _state.numOptions,
+            "LootBoxRandomness: _option out of range"
+        );
         _state.classProbabilities[_optionId] = probabilities;
     }
 

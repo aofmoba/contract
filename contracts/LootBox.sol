@@ -132,6 +132,13 @@ contract LootBox is
         LootBoxRandomness.setSeed(state, _seed);
     }
 
+    function addNewOption(
+        address factoryAddress,
+        uint16[] memory _probabilities
+    ) public onlyRole(DEFAULT_ADMIN_ROLE) {
+        LootBoxRandomness.addNewOption(state, factoryAddress, _probabilities);
+    }
+
     function setProbabilitiesForOption(
         uint256 _optionId,
         uint16[] memory _probabilities
