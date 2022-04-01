@@ -3,7 +3,7 @@ pragma solidity ^0.8.2;
 
 import "./interfaces/IERC1155Factory.sol";
 import "./CyberClub.sol";
-import "./CyberPopBadge.sol";
+import "./CyberpopGame.sol";
 import "./LootBox.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Receiver.sol";
@@ -12,7 +12,7 @@ contract CyberClubFactory is AccessControl, IERC1155Factory, ERC1155Receiver {
     CyberClub private char;
     // Russian doll lootbox
     LootBox private lootbox;
-    CyberPopBadge private comsumerable;
+    CyberpopGame private comsumerable;
 
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
@@ -23,7 +23,7 @@ contract CyberClubFactory is AccessControl, IERC1155Factory, ERC1155Receiver {
     ) {
         char = CyberClub(_charAddress);
         lootbox = LootBox(_lootboxAddress);
-        comsumerable = CyberPopBadge(_comsumerableAddress);
+        comsumerable = CyberpopGame(_comsumerableAddress);
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
         _setupRole(MINTER_ROLE, _msgSender());
     }
@@ -35,11 +35,11 @@ contract CyberClubFactory is AccessControl, IERC1155Factory, ERC1155Receiver {
         char = CyberClub(_address);
     }
 
-    function setCyberPopBadge(address _address)
+    function setCyberpopGame(address _address)
         external
         onlyRole(DEFAULT_ADMIN_ROLE)
     {
-        comsumerable = CyberPopBadge(_address);
+        comsumerable = CyberpopGame(_address);
     }
 
     function mint(

@@ -8,7 +8,7 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
 
-contract CyberPopBadge is
+contract CyberpopGame is
     Initializable,
     ERC1155Upgradeable,
     AccessControlUpgradeable,
@@ -24,7 +24,7 @@ contract CyberPopBadge is
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() initializer {}
 
-    function __CyberPopBadge_init() private {
+    function __CyberpopGame_init() private {
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
         _setupRole(MINTER_ROLE, _msgSender());
         _setupRole(BURNER_ROLE, _msgSender());
@@ -32,11 +32,11 @@ contract CyberPopBadge is
     }
 
     function initialize() public initializer {
-        __ERC1155_init("https://api.cyberpop.online/badge/");
+        __ERC1155_init("https://api.cyberpop.online/game/");
         __AccessControl_init();
         __ERC1155Supply_init();
         __UUPSUpgradeable_init();
-        __CyberPopBadge_init();
+        __CyberpopGame_init();
         _numOptions = 2;
     }
 
@@ -49,7 +49,7 @@ contract CyberPopBadge is
     }
 
     function name() public pure returns (string memory) {
-        return "CyberPop Badge";
+        return "Cyberpop Game Item";
     }
 
     function symbol() public pure returns (string memory) {
