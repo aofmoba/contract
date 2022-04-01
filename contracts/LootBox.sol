@@ -7,8 +7,16 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Burnable.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/security/Pausable.sol";
 
-contract LootBox is ERC1155, ERC1155Burnable, AccessControl {
+contract LootBox is
+    ERC1155,
+    ERC1155Burnable,
+    AccessControl,
+    ReentrancyGuard,
+    Pausable
+{
     using LootBoxRandomness for LootBoxRandomness.LootBoxRandomnessState;
     LootBoxRandomness.LootBoxRandomnessState private state;
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
@@ -47,7 +55,11 @@ contract LootBox is ERC1155, ERC1155Burnable, AccessControl {
     /**
      * @dev User facing interface, use this function to get a random reward from the loot box
      */
-    function unpack(uint256 _optionId, uint256 _amount) external {
+    function unpack(uint256 _optionId, uint256 _amount)
+        external
+        whenNotPaused
+        nonReentrant
+    {
         // This will underflow if _msgSender() does not own enough tokens.
         _burn(_msgSender(), _optionId, _amount);
         // Mint nfts contained by LootBox
@@ -66,7 +78,7 @@ contract LootBox is ERC1155, ERC1155Burnable, AccessControl {
         uint256 id,
         uint256 amount,
         bytes memory data
-    ) public onlyRole(MINTER_ROLE) {
+    ) public onlyRole(MINTER_ROLE) whenNotPaused {
         _mint(account, id, amount, data);
     }
 
@@ -75,7 +87,7 @@ contract LootBox is ERC1155, ERC1155Burnable, AccessControl {
         uint256[] memory ids,
         uint256[] memory amounts,
         bytes memory data
-    ) public onlyRole(MINTER_ROLE) {
+    ) public onlyRole(MINTER_ROLE) whenNotPaused {
         _mintBatch(to, ids, amounts, data);
     }
 
@@ -90,26 +102,30 @@ contract LootBox is ERC1155, ERC1155Burnable, AccessControl {
         super._beforeTokenTransfer(operator, from, to, ids, amounts, data);
     }
 
-    function setState(
-        uint256 _numOptions,
-        uint256 _numClasses,
-        uint256 _seed
-    ) public onlyRole(DEFAULT_ADMIN_ROLE) {
-        LootBoxRandomness.initState(state, _numOptions, _numClasses, _seed);
+    function pause() external onlyRole(DEFAULT_ADMIN_ROLE) {
+        _pause();
     }
 
-    function setTokenIdsForClass(uint256 _classId, uint256[] memory _tokenIds)
+    function unpause() external onlyRole(DEFAULT_ADMIN_ROLE) {
+        _unpause();
+    }
+
+    function setState(uint256 _numOptions, uint256 _seed)
         public
         onlyRole(DEFAULT_ADMIN_ROLE)
     {
-        LootBoxRandomness.setTokenIdsForClass(state, _classId, _tokenIds);
+        LootBoxRandomness.initState(state, _numOptions, _seed);
     }
 
-    function setFactoryForClass(uint256 _classId, address _factoryAddress)
+    function setFactoryForOption(uint256 _optionId, address _factoryAddress)
         public
         onlyRole(DEFAULT_ADMIN_ROLE)
     {
-        LootBoxRandomness.setFactoryForClass(state, _classId, _factoryAddress);
+        LootBoxRandomness.setFactoryForOption(
+            state,
+            _optionId,
+            _factoryAddress
+        );
     }
 
     function setSeed(uint256 _seed) public onlyRole(DEFAULT_ADMIN_ROLE) {

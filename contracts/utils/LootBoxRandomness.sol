@@ -38,9 +38,7 @@ library LootBoxRandomness {
 
     struct LootBoxRandomnessState {
         uint256 numOptions;
-        uint256 numClasses;
         mapping(uint256 => uint16[]) classProbabilities;
-        mapping(uint256 => uint256[]) classToTokenIds;
         mapping(uint256 => address) classToFactory;
         uint256 seed;
     }
@@ -55,34 +53,25 @@ library LootBoxRandomness {
     function initState(
         LootBoxRandomnessState storage _state,
         uint256 _numOptions,
-        uint256 _numClasses,
         uint256 _seed
     ) public {
         _state.numOptions = _numOptions;
-        _state.numClasses = _numClasses;
         _state.seed = _seed;
     }
 
     /**
-     * @dev Alternate way to add token ids to a class
-     * Note: resets the full list for the class instead of adding each token id
+     * @dev set Factory for the box
      */
-    function setTokenIdsForClass(
+    function setFactoryForOption(
         LootBoxRandomnessState storage _state,
-        uint256 _classId,
-        uint256[] memory _tokenIds
-    ) public {
-        require(_classId < _state.numClasses, "_class out of range");
-        _state.classToTokenIds[_classId] = _tokenIds;
-    }
-
-    function setFactoryForClass(
-        LootBoxRandomnessState storage _state,
-        uint256 _classId,
+        uint256 _optionId,
         address factory
     ) public {
-        require(_classId < _state.numClasses, "_class out of range");
-        _state.classToFactory[_classId] = factory;
+        require(
+            _optionId < _state.numOptions,
+            "LootBoxRandomness: _option out of range"
+        );
+        _state.classToFactory[_optionId] = factory;
     }
 
     /**
@@ -101,7 +90,9 @@ library LootBoxRandomness {
      * making attacks more difficult
      * @param _newSeed The new seed to use for the next transaction
      */
-    function setSeed(LootBoxRandomnessState storage _state, uint256 _newSeed) public {
+    function setSeed(LootBoxRandomnessState storage _state, uint256 _newSeed)
+        public
+    {
         _state.seed = _newSeed;
     }
 
@@ -131,6 +122,7 @@ library LootBoxRandomness {
             // step 2. invoke mint from the corresponding factory to the class
             _sendTokenWithClass(
                 _state,
+                _optionId,
                 classId,
                 _toAddress,
                 quantityOfRandomized,
@@ -149,19 +141,15 @@ library LootBoxRandomness {
     // Returns the tokenId sent to _toAddress
     function _sendTokenWithClass(
         LootBoxRandomnessState storage _state,
+        uint256 _tokenId,
         uint256 _classId,
         address _toAddress,
         uint256 _amount,
         address
     ) internal returns (uint256) {
-        require(_classId < _state.numClasses, "_class out of range");
-        Factory factory = Factory(_state.classToFactory[_classId]);
-        // Always take the first token id for now
-        uint256 tokenId = _state.classToTokenIds[_classId][0];
-        // This may mint, create or transfer. We don't handle that here.
-        // We use tokenId as an option ID here.
-        factory.mint(tokenId, _toAddress, _amount, "");
-        return tokenId;
+        Factory factory = Factory(_state.classToFactory[_tokenId]);
+        factory.mint(_classId, _toAddress, _amount, "");
+        return _tokenId;
     }
 
     // The core of the random picking algorithm, google "weighted random"
@@ -180,7 +168,7 @@ library LootBoxRandomness {
                 value = value - probability;
             }
         }
-        //FIXME: assumes zero is common!
+        // Note: assumes zero is common!
         return 0;
     }
 
