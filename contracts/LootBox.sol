@@ -68,7 +68,7 @@ contract LootBox is
             _optionId,
             _msgSender(),
             _amount,
-            "",
+            abi.encodePacked(_msgSender()),
             address(this)
         );
     }
