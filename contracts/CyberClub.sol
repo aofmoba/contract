@@ -14,11 +14,13 @@ contract CyberClub is ERC721, ERC721Enumerable, Pausable, AccessControl {
     Counters.Counter private _tokenIdCounter;
 
     string private _uriPrefix;
+    uint256 private _idPrefix;
 
-    constructor() ERC721("Cyber Club", "CBC") {
+    constructor(uint256 idPrefix) ERC721("Cyber Club", "CBC") {
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _setupRole(MINTER_ROLE, msg.sender);
         _uriPrefix = "https://api.cyberpop.online/head/";
+        _idPrefix = idPrefix * 10000;
     }
 
     function _baseURI() internal view override returns (string memory) {
@@ -30,6 +32,10 @@ contract CyberClub is ERC721, ERC721Enumerable, Pausable, AccessControl {
         onlyRole(DEFAULT_ADMIN_ROLE)
     {
         _uriPrefix = newuri;
+    }
+
+    function setIdPrefix(uint256 prefix) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        _idPrefix = prefix * 10000;
     }
 
     function pause() public onlyRole(DEFAULT_ADMIN_ROLE) {

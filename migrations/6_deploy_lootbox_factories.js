@@ -3,6 +3,7 @@ const Cyborg = artifacts.require("Cyborg");
 const CyberpopGame = artifacts.require("CyberpopGame");
 const CyberClubFactory = artifacts.require("CyberClubFactory");
 const CharacterFactory = artifacts.require("CharacterFactory");
+const { ChainIDPrefixes } = require("../lib/valuesCommon");
 
 module.exports = async (deployer, network, accounts) => {
   const club = await CyberClub.deployed()
@@ -14,7 +15,7 @@ module.exports = async (deployer, network, accounts) => {
   // const cyborg = await Cyborg.at('0x..')
 
   await deployer.deploy(CyberClubFactory, club.address, badge.address)
-  await deployer.deploy(CharacterFactory, cyborg.address, 10000)
+  await deployer.deploy(CharacterFactory, cyborg.address, ChainIDPrefixes[network])
 
   const charFactory = await CharacterFactory.deployed()
   let minter = await cyborg.MINTER_ROLE()

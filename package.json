@@ -1,7 +1,7 @@
 {
   "devDependencies": {
     "@openzeppelin/test-helpers": "^0.5.15",
-    "@openzeppelin/truffle-upgrades": "^1.14.0",
+    "@openzeppelin/truffle-upgrades": "^1.15.0",
     "@truffle/hdwallet-provider": "^2.0.1",
     "truffle-plugin-verify": "^0.5.24"
   },
