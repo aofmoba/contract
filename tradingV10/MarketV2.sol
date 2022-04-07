@@ -110,4 +110,20 @@ contract MarketV2 is ERC1155Holder, ERC721Holder,Multicall{
       emit buyErc1155Event(msg.sender,tokenId,price*amount,amount);
     }
 
+    function modifyErc1155Price(uint256 id,uint256 price) external{
+       if(msg.sender != owner){
+              revert Unauthorized(msg.sender);
+       } 
+       erc1155Price[id] = price;
+    }
+
+    function modifyErc721Price(uint256 id,uint256 price) external{
+       if(msg.sender != owner){
+              revert Unauthorized(msg.sender);
+       } 
+      erc721Price[id] = price;
+    }
+
+
+
 }
