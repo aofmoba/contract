@@ -1,0 +1,37 @@
+const { MerkleTree } = require('merkletreejs')
+const SHA256 = require('crypto-js/sha256')
+const keccak256 = require('keccak256');
+const { BigNumber, utils } = require('ethers')
+
+const account = "0x0C334B19471bE86Ae7D3E49D9f658B85b5caCF10"
+const amount = 100
+const pairHex1 = utils.solidityKeccak256(['address', 'uint256'], [account, amount])
+
+const account2 = "0x42c2c41c89c0BcA68ABa428a8936e91de5b27900"
+const amount2 = 101
+const pairHex2 = utils.solidityKeccak256(['address', 'uint256'], [account2, amount2])
+
+
+const account3 = "0x49da479dbEdF90B3879baEb847DaA866A3BeF631"
+const amount3 = 102
+const pairHex3 = utils.solidityKeccak256(['address', 'uint256'], [account3, amount])
+
+const leaves = [pairHex1,pairHex2,pairHex3]
+
+const merkleTree = new MerkleTree(leaves, keccak256,{ hashLeaves: true, sortPairs: true })
+
+
+const root = merkleTree.getHexRoot();
+console.log("root:    "+merkleTree)
+
+
+const leaf = keccak256(leaves[0]);
+console.log("leaf:        "+leaf.toString("hex"))
+
+const proof = merkleTree.getHexProof(leaf);
+console.log("proof:     "+proof)
+
+console.log(merkleTree.verify(proof, leaf, root));
+
+
+// console.log(pairHex)
