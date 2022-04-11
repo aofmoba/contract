@@ -39,4 +39,9 @@ contract("LootBox", function (accounts) {
     await lootbox.setProbabilitiesForOption(1, [0, 9500, 500])
     await lootbox.unpack(1, 1, { from: userA })
   })
+
+  it("can modify factory", async () => {
+    let factory = await CyberClubFactory.deployed()
+    await lootbox.setFactoryForOption(0, factory.address)
+  })
 })
