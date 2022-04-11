@@ -12,18 +12,20 @@ import "@openzeppelin/contracts/utils/Multicall.sol";
 contract MarketV2 is ERC1155Holder, ERC721Holder,Multicall{
 
     address public cyt;
-    address public erc1155AssetAddress;
+    address public erc1155WeaponsAddress;
     address public nftAddress;
+    address public lootBoxAddress;
     address private owner;
 
     bool _notEntered = true;
     
     mapping (uint256 => uint256) public tokenSupply;
-    mapping (uint256 => uint256) public erc1155Price;
+    mapping (uint256 => uint256) public erc1155Price;   //盲盒id跟武器Id尽量不要重复  
     mapping (uint256 => uint256) public erc721Price;
     
    event buyNftEvent(address indexed  palyer,uint256 tokenId,uint256 price);
-   event buyErc1155Event(address indexed palyer, uint256 tokenId,uint256 price,uint256 amount);
+   event buyLootBoxEvent(address indexed palyer, uint256 tokenId,uint256 price,uint256 amount);
+   event buyErc1155WeaponsEvent(address indexed palyer,uint256 tokenId,uint256 price,uint256 amount);
 
     error Unauthorized(address caller);
     error UnMatchPrice(address caller,uint256 id,uint256 price);
@@ -35,10 +37,11 @@ contract MarketV2 is ERC1155Holder, ERC721Holder,Multicall{
         _notEntered = true;
    }
 
-   constructor(address cyt_,address erc1155AssetAddress_,address nftAddress_) {
+   constructor(address cyt_,address erc1155WeaponsAddress_,address nftAddress_,address lootBoxAddress_) {
          cyt = cyt_;
-         erc1155AssetAddress = erc1155AssetAddress_;
+         erc1155WeaponsAddress = erc1155WeaponsAddress_;
          nftAddress = nftAddress_;
+         lootBoxAddress = lootBoxAddress_;
          owner = msg.sender;
    }
 
@@ -50,13 +53,14 @@ contract MarketV2 is ERC1155Holder, ERC721Holder,Multicall{
      IERC721(nftAddress).safeTransferFrom(owner,address(this),tokenId);
     }
 
-    function sellErc1155(uint256 price,uint256 tokenId,uint256 amount) external{
+    function sellErc1155(address tokenAddress,uint256 price,uint256 tokenId,uint256 amount) external{
        if(msg.sender != owner){
               revert Unauthorized(msg.sender);
        } 
        erc1155Price[tokenId] = price;
-       IERC1155(erc1155AssetAddress).safeTransferFrom(owner,address(this),tokenId,amount,"0x");
+       IERC1155(tokenAddress).safeTransferFrom(owner,address(this),tokenId,amount,"0x");
      }
+
 
     function withdrawNft(uint256 tokenId) external{
         if(msg.sender != owner){
@@ -65,11 +69,11 @@ contract MarketV2 is ERC1155Holder, ERC721Holder,Multicall{
        IERC721(nftAddress).safeTransferFrom(address(this),owner,tokenId); 
     }
 
-    function withdrawErc1155( uint256[] memory ids,uint256[] memory amounts) external {
+    function withdrawErc1155(address tokenAddress, uint256[] memory ids,uint256[] memory amounts) external {
         if(msg.sender != owner){
               revert Unauthorized(msg.sender);
        } 
-       IERC1155(erc1155AssetAddress).safeBatchTransferFrom(address(this),owner,ids,amounts,"0x"); 
+       IERC1155(tokenAddress).safeBatchTransferFrom(address(this),owner,ids,amounts,"0x"); 
     }
 
     function buyNft(uint256 tokenId,uint256 price) external nonReentrant{
@@ -91,24 +95,45 @@ contract MarketV2 is ERC1155Holder, ERC721Holder,Multicall{
       emit buyNftEvent(msg.sender,tokenId,price);
     }
 
-    function buyErc1155(uint256 tokenId,uint256 price,uint256 amount) external{
+    function buyErc1155Weapons(uint256 tokenId,uint256 price,uint256 amount) external{
       if(price != erc1155Price[tokenId]){
          revert UnMatchPrice(msg.sender,tokenId,price);
       }
       IERC20(cyt).transferFrom(msg.sender,owner,price * amount);
-      IERC1155(erc1155AssetAddress).safeTransferFrom(address(this),msg.sender,tokenId,amount,"0x");
-      emit buyErc1155Event(msg.sender,tokenId,price*amount,amount);
+      IERC1155(erc1155WeaponsAddress).safeTransferFrom(address(this),msg.sender,tokenId,amount,"0x");
+      emit buyErc1155WeaponsEvent(msg.sender,tokenId,price*amount,amount);
     }
 
-    function buyErc1155WithPermit(uint256 tokenId,uint256 price,uint256 amount,uint256 deadline, uint8 v, bytes32 r, bytes32 s) external nonReentrant{
+
+    function buyErc1155WeaponsWithPermit(uint256 tokenId,uint256 price,uint256 amount,uint256 deadline, uint8 v, bytes32 r, bytes32 s) external nonReentrant{
       if(price != erc1155Price[tokenId]){
          revert UnMatchPrice(msg.sender,tokenId,price);
       }
       IERC20Permit(cyt).permit(msg.sender,address(this),price,deadline,v,r,s);
       IERC20(cyt).transferFrom(msg.sender,owner,price * amount);
-      IERC1155(erc1155AssetAddress).safeTransferFrom(address(this),msg.sender,tokenId,amount,"0x");
-      emit buyErc1155Event(msg.sender,tokenId,price*amount,amount);
+      IERC1155(erc1155WeaponsAddress).safeTransferFrom(address(this),msg.sender,tokenId,amount,"0x");
+      emit buyErc1155WeaponsEvent(msg.sender,tokenId,price*amount,amount);
     }
+
+    function buyLootBoxWeapons(uint256 tokenId,uint256 price,uint256 amount) external {
+       if(price != erc1155Price[tokenId]){
+         revert UnMatchPrice(msg.sender,tokenId,price);
+      }
+      IERC20(cyt).transferFrom(msg.sender,owner,price * amount);
+      IERC1155(lootBoxAddress).safeTransferFrom(address(this),msg.sender,tokenId,amount,"0x");
+      emit buyLootBoxEvent(msg.sender,tokenId,price,amount);
+    }
+
+    
+    function buyLootBoxWeaponsWithPermit(uint256 tokenId,uint256 price,uint256 amount) external {
+       if(price != erc1155Price[tokenId]){
+         revert UnMatchPrice(msg.sender,tokenId,price);
+      }
+      IERC20(cyt).transferFrom(msg.sender,owner,price * amount);
+      IERC1155(lootBoxAddress).safeTransferFrom(address(this),msg.sender,tokenId,amount,"0x");
+      emit buyLootBoxEvent(msg.sender,tokenId,price,amount);
+    }
+
 
     function modifyErc1155Price(uint256 id,uint256 price) external{
        if(msg.sender != owner){
@@ -123,7 +148,5 @@ contract MarketV2 is ERC1155Holder, ERC721Holder,Multicall{
        } 
       erc721Price[id] = price;
     }
-
-
 
 }
