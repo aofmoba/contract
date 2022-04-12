@@ -61,7 +61,6 @@ contract MarketV2 is ERC1155Holder, ERC721Holder,Multicall{
        IERC1155(tokenAddress).safeTransferFrom(owner,address(this),tokenId,amount,"0x");
      }
 
-
     function withdrawNft(uint256 tokenId) external{
         if(msg.sender != owner){
               revert Unauthorized(msg.sender);
@@ -95,7 +94,7 @@ contract MarketV2 is ERC1155Holder, ERC721Holder,Multicall{
       emit buyNftEvent(msg.sender,tokenId,price);
     }
 
-    function buyErc1155Weapons(uint256 tokenId,uint256 price,uint256 amount) external{
+    function buyErc1155Weapons(uint256 tokenId,uint256 price,uint256 amount) external nonReentrant{
       if(price != erc1155Price[tokenId]){
          revert UnMatchPrice(msg.sender,tokenId,price);
       }
@@ -103,7 +102,6 @@ contract MarketV2 is ERC1155Holder, ERC721Holder,Multicall{
       IERC1155(erc1155WeaponsAddress).safeTransferFrom(address(this),msg.sender,tokenId,amount,"0x");
       emit buyErc1155WeaponsEvent(msg.sender,tokenId,price*amount,amount);
     }
-
 
     function buyErc1155WeaponsWithPermit(uint256 tokenId,uint256 price,uint256 amount,uint256 deadline, uint8 v, bytes32 r, bytes32 s) external nonReentrant{
       if(price != erc1155Price[tokenId]){
@@ -115,7 +113,7 @@ contract MarketV2 is ERC1155Holder, ERC721Holder,Multicall{
       emit buyErc1155WeaponsEvent(msg.sender,tokenId,price*amount,amount);
     }
 
-    function buyLootBoxWeapons(uint256 tokenId,uint256 price,uint256 amount) external {
+    function buyLootBox(uint256 tokenId,uint256 price,uint256 amount) external nonReentrant{
        if(price != erc1155Price[tokenId]){
          revert UnMatchPrice(msg.sender,tokenId,price);
       }
@@ -124,8 +122,7 @@ contract MarketV2 is ERC1155Holder, ERC721Holder,Multicall{
       emit buyLootBoxEvent(msg.sender,tokenId,price,amount);
     }
 
-    
-    function buyLootBoxWeaponsWithPermit(uint256 tokenId,uint256 price,uint256 amount) external {
+    function buyLootWithPermit(uint256 tokenId,uint256 price,uint256 amount) external nonReentrant{
        if(price != erc1155Price[tokenId]){
          revert UnMatchPrice(msg.sender,tokenId,price);
       }
