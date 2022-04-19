@@ -29,7 +29,7 @@ contract Cyborg is
     constructor() initializer {}
 
     function __Cyborg_init() private {
-        _uriPrefix = "https://api.cyberpop.online/server/";
+        _uriPrefix = "https://api.cyberpop.online/role/";
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
         _setupRole(MINTER_ROLE, _msgSender());
         _setupRole(BURNER_ROLE, _msgSender());
