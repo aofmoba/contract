@@ -7,14 +7,19 @@ import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/utils/Context.sol";
 import "@openzeppelin/contracts/utils/Multicall.sol";
-
+import "./Proof.sol";
 
 contract GamePool  is ERC1155Holder, ERC721Holder,Multicall,Context{
 
     address private erc1155AssetAddress;
     address private nftAddress;
     address private owner;
-
+    address private signer;
+    address private cyt;
+    address private coin;
+    bool _notEntered = true;
+    uint256 public blockTimestampLast;
+    
     error Unauthorized(address caller);
 
     event loadingNftEvent(address from,uint256 tokenId);
@@ -23,10 +28,22 @@ contract GamePool  is ERC1155Holder, ERC721Holder,Multicall,Context{
     event withdrawErc1155Event(address player,uint256[] ids,uint256[] amounts);
     event withdrawNftEvent(address player,uint256 tokenId);
 
-    constructor(address erc1155AssetAddress_, address nftAddress_){
+
+    modifier nonReentrant() {
+      require(_notEntered, "re-entered");
+        _notEntered = false;
+         _;
+        _notEntered = true;
+    }
+   
+
+    constructor(address signer_, address erc1155AssetAddress_, address nftAddress_, address cyt_, address coin_){
      owner = _msgSender();
+     signer = signer_;
      erc1155AssetAddress = erc1155AssetAddress_;
      nftAddress = nftAddress_;
+     cyt = cyt_;
+     coin = coin_;
    }
       
    /*
@@ -38,7 +55,6 @@ contract GamePool  is ERC1155Holder, ERC721Holder,Multicall,Context{
       require(IERC721(nftAddress).ownerOf(tokenId) == address(this),"Please re-transfer");
       emit loadingNftEvent(_msgSender(),tokenId);
     }
-
 
    /*
     * @dev:  Used by players to load the asset of erc1155
@@ -63,7 +79,7 @@ contract GamePool  is ERC1155Holder, ERC721Holder,Multicall,Context{
     }
 
 
-    /* @dev: player retrieves the nft
+    /*@dev: player retrieves the nft
     * @param: tokenId: The player wants to load the Id of the equipment. amout: the amount of erc721
     */
     function withdrawNft(address player,uint256 tokenId) external{
@@ -73,4 +89,24 @@ contract GamePool  is ERC1155Holder, ERC721Holder,Multicall,Context{
       IERC721(nftAddress).safeTransferFrom(address(this),player,tokenId);
       emit withdrawNftEvent(player,tokenId);     
     }
+ 
+   //Gets the current timestamp
+   function getTime() public view returns(uint256) {
+      return block.timestamp;
+    }
+
+    function withdrawCyt(uint256 amount,bytes memory signature,uint256  currentTimeStamp)external nonReentrant {
+      require(currentTimeStamp > blockTimestampLast,"the proof has expired");
+      require(Proof.checkPermissions(signer,amount,signature,currentTimeStamp,"ERC20_CYT")==true,"You don't get the proof right");
+      IERC20(cyt).transfer(_msgSender(),amount);
+      blockTimestampLast = currentTimeStamp;
+    }
+
+    function withdrawCoin(uint256 amount,bytes memory signature,uint256 currentTimeStamp) external nonReentrant{
+      require(currentTimeStamp > blockTimestampLast,"the proof has expired");
+      require(Proof.checkPermissions(signer,amount,signature,currentTimeStamp,"ERC20_COIN")==true,"You don't get the proof right");
+      IERC20(coin).transfer(_msgSender(),amount);
+      blockTimestampLast = currentTimeStamp;
+    }
+ 
 }

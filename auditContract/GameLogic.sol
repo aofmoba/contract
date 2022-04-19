@@ -3,14 +3,13 @@ pragma solidity >=0.7.0 <0.9.0;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
-import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/interfaces/IERC1271.sol";
 import  "@openzeppelin/contracts/utils/cryptography/SignatureChecker.sol";
-import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
 import "./IErc1155Asset.sol";
 import "./ICyborg.sol";
+import "./Proof.sol";
 
 contract GameLogic{
   
@@ -20,6 +19,8 @@ contract GameLogic{
   address private signer;
   address private gamePoolAddress;
   bool _notEntered = true;
+  uint256 public blockTimestampLast;
+
 
   event createGamePropeEvent(address indexed  player,uint256 tokenId,uint256 amount);
   event mergeToBdEvent(address from, uint256 newId);
@@ -41,6 +42,17 @@ contract GameLogic{
    }
    
    
+   /* @dev: Generate bd
+   *  @param: newId: the id of bd. signature: The signature of the server. timestamp: The timestamp at the time the proof was generated
+   */
+   function mergeToBd(uint256 newId,bytes memory signature,uint256  currentTimeStamp) public nonReentrant {
+        require(currentTimeStamp > blockTimestampLast,"the proof has expired");
+        require(Proof.checkPermissions(signer,newId,signature,currentTimeStamp,"ERC721_bd")==true,"You don't get the proof right");
+        ICyborg(nftAddress).safeMint(gamePoolAddress,newId);
+        blockTimestampLast = currentTimeStamp;
+        emit mergeToBdEvent(msg.sender,newId);
+    }
+
    /*
     * @dev: create a nft by owner 
     * @param:  payer: the address of player. tokenId: the id of prope
@@ -136,58 +148,4 @@ contract GameLogic{
       IErc1155Asset(erc1155AssetAddress).burnBatch(player,ids,amounts);
       IErc1155Asset(erc1155AssetAddress).mint(player,newId,newAmount,"");
    }
-   
-   /* @dev: Generate bd
-   *  @param: newId: the id of bd. signature: The signature of the server. timestamp: The timestamp at the time the proof was generated
-   */
-  function mergeToBd(uint256 newId,bytes memory signature,string memory timestamp) public nonReentrant {
-        require(checkPermissions(newId,signature,timestamp)==true,"You don't get the proof right");
-        ICyborg(nftAddress).safeMint(gamePoolAddress,newId);
-        emit mergeToBdEvent(msg.sender,newId);
-    }
-   
- //Convert parameter types from bytes to string
- function bytesToStr(bytes memory data) internal pure returns (string memory) {
-    bytes memory alphabet = "0123456789abcdef";
-
-    bytes memory str = new bytes(2 + data.length * 2);
-    str[0] = "0";
-    str[1] = "x";
-    for (uint256 i = 0; i < data.length; i++) {
-        str[2 + i * 2] = alphabet[uint256(uint8(data[i] >> 4))];
-        str[3 + i * 2] = alphabet[uint256(uint8(data[i] & 0x0f))];
-    }
-      return string(str);
-   }
-
-  
-   function strConcat(string memory str1, string memory str2,string memory str3) internal pure returns (string memory){
-        bytes memory _str1 = bytes(str1);
-        bytes memory _str2 = bytes(str2);
-        bytes memory _str3 = bytes(str3);
-        string memory ret = new string(_str1.length + _str2.length + _str3.length);
-        bytes memory bret = bytes(ret);
-        uint k = 0;
-        for (uint i = 0; i < _str1.length; i++)bret[k++] = _str1[i];
-        for (uint i = 0; i < _str2.length; i++) bret[k++] = _str2[i];
-        for (uint i = 0; i < _str3.length; i++) bret[k++] = _str3[i];
-        return string(ret);
-   }  
-
-  //Convert parameter types from address to string
-    function addrToStr(address account) internal pure returns (string memory) {
-      return bytesToStr(abi.encodePacked(account));
-   }
-
-    function getHash(address from,string memory newId,string memory timestamp) internal pure returns (bytes32 result){  
-        return  ECDSA.toEthSignedMessageHash(keccak256(abi.encodePacked( strConcat( addrToStr(from),newId,timestamp ))));
-     }  
-
-   /* @dev: Check the correctness of the proof
-   *  @param: newId: the id of bd. signature: The signature of the server. timestamp: The timestamp at the time the proof was generated
-   */
-    function checkPermissions(uint256 newId, bytes memory signature,string memory timestamp) internal view returns(bool) {
-        return SignatureChecker.isValidSignatureNow(signer,getHash(msg.sender,Strings.toString(newId),timestamp),signature);
-    }
-
 }
