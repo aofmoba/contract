@@ -89,12 +89,10 @@ contract GamePool  is ERC1155Holder, ERC721Holder,Multicall,Context{
       IERC721(nftAddress).safeTransferFrom(address(this),player,tokenId);
       emit withdrawNftEvent(player,tokenId);     
     }
- 
-   //Gets the current timestamp
-   function getTime() public view returns(uint256) {
-      return block.timestamp;
-    }
 
+    /*@dev: player retrieve  cyt
+     *@param: signature：proof of cyt. currentTimeStamp: timeStamp
+    */ 
     function withdrawCyt(uint256 amount,bytes memory signature,uint256  currentTimeStamp)external nonReentrant {
       require(currentTimeStamp > blockTimestampLast,"the proof has expired");
       require(Proof.checkPermissions(signer,amount,signature,currentTimeStamp,"ERC20_CYT")==true,"You don't get the proof right");
@@ -102,6 +100,9 @@ contract GamePool  is ERC1155Holder, ERC721Holder,Multicall,Context{
       blockTimestampLast = currentTimeStamp;
     }
 
+    /*@dev: player retrieve  coin
+     *@param: signature：proof of cyt. currentTimeStamp: timeStamp
+    */ 
     function withdrawCoin(uint256 amount,bytes memory signature,uint256 currentTimeStamp) external nonReentrant{
       require(currentTimeStamp > blockTimestampLast,"the proof has expired");
       require(Proof.checkPermissions(signer,amount,signature,currentTimeStamp,"ERC20_COIN")==true,"You don't get the proof right");
