@@ -9,7 +9,7 @@ import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 import "@openzeppelin/contracts/utils/Multicall.sol";
 
-contract Market is ERC1155Holder, ERC721Holder,Multicall{
+contract MarketV2 is ERC1155Holder, ERC721Holder,Multicall{
 
     address public cyt;
     address public erc1155WeaponsAddress;
@@ -58,7 +58,7 @@ contract Market is ERC1155Holder, ERC721Holder,Multicall{
 
 
     /* @dev: official listings 
-    * @param: price: Commodity prices. tokenId: the id of 
+    * @param: price: Commodity prices. tokenId: the id of erc1155
     */
     function sellErc1155(address tokenAddress,uint256 price,uint256 tokenId,uint256 amount) external{
        if(msg.sender != owner){
@@ -141,10 +141,11 @@ contract Market is ERC1155Holder, ERC721Holder,Multicall{
     }
 
    //purchase LootBoox with signature
-    function buyLootBooxWithPermit(uint256 tokenId,uint256 price,uint256 amount) external nonReentrant{
+    function buyLootBooxWithPermit(uint256 tokenId,uint256 price,uint256 amount,uint256 deadline, uint8 v, bytes32 r, bytes32 s) external nonReentrant{
        if(price != erc1155Price[tokenId]){
          revert UnMatchPrice(msg.sender,tokenId,price);
       }
+      IERC20Permit(cyt).permit(msg.sender,address(this),price,deadline,v,r,s);
       IERC20(cyt).transferFrom(msg.sender,owner,price * amount);
       IERC1155(lootBoxAddress).safeTransferFrom(address(this),msg.sender,tokenId,amount,"0x");
       emit buyLootBoxEvent(msg.sender,tokenId,price,amount);
