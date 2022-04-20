@@ -65,20 +65,6 @@ contract GameLogic{
         ICyborg(roleAddress).safeMint(player,tokenId);   
    }
 
-    /**
-     * @dev Destroys  the tokens of token type `tokenId` from `msg.sender`
-     *
-     * Requirements:
-     * - `from` cannot be the zero address.
-     * - `from` must have at least `amount` tokens of token type `id`.
-     */
-   function burn(uint256 tokenId) public{
-        if(msg.sender != owner){
-              revert Unauthorized(msg.sender);
-       } 
-      ICyborg(roleAddress).burn(tokenId);
-   }
-
      /**
      * @dev Creates `amount` tokens of token type `tokenId`, and assigns them to player.
      *
