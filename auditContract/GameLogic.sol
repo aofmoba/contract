@@ -57,7 +57,7 @@ contract GameLogic{
     * @dev: create a nft by owner 
     * @param:  payer: the address of player. tokenId: the id of prope
    */
-   function createNft(address player,uint256 tokenId) 
+   function createRole(address player,uint256 tokenId) 
         external{
            if(msg.sender != owner){
               revert Unauthorized(msg.sender);
@@ -109,7 +109,7 @@ contract GameLogic{
      * - If `to` refers to a smart contract, it must implement {IERC1155Receiver-onERC1155BatchReceived} and return the
      * acceptance magic value.
      */
-    function batchCreateGamePrope(address player,uint256 [] memory tokenIds,uint256[] memory amounts,uint64 length,bytes memory data)
+    function batchCreateWeapons(address player,uint256 [] memory tokenIds,uint256[] memory amounts,uint64 length,bytes memory data)
      public
      returns(uint256[] memory tokendIds) {
       if(msg.sender != owner){
@@ -128,7 +128,7 @@ contract GameLogic{
   /*@dev: Used by players to update the asset of erc721
   * @param:  payer: the address of player. ids: burn off the ids  newId: newId after successful upgrade
   */
-   function upgradePropeForNft(address player,uint256[] memory ids,uint256 newId)
+   function upgradeRole(address player,uint256[] memory ids,uint256 newId)
    external{
       if(msg.sender != owner){
          revert Unauthorized(msg.sender);
@@ -140,7 +140,7 @@ contract GameLogic{
    }
   
   // used by players to update the asset of erc1155
-   function upgradePropeForErc1155(address player,uint256[] memory ids,uint256[] memory amounts,uint256 newId,uint256 newAmount)
+   function upgradeWeapons(address player,uint256[] memory ids,uint256[] memory amounts,uint256 newId,uint256 newAmount)
     external{
      if(msg.sender != owner){
          revert Unauthorized(msg.sender);

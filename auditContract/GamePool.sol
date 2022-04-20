@@ -23,9 +23,9 @@ contract GamePool  is ERC1155Holder, ERC721Holder,Multicall,Context{
     error Unauthorized(address caller);
 
     event loadingRoleEvent(address from,uint256 tokenId);
-    event loadingErc1155Event(address from,uint256 id,uint256 amount);
+    event loadingWeaponsEvent(address from,uint256 id,uint256 amount);
 
-    event withdrawErc1155Event(address player,uint256[] ids,uint256[] amounts);
+    event withdrawWeaponsEvent(address player,uint256[] ids,uint256[] amounts);
     event withdrawRoleEvent(address player,uint256 tokenId);
 
     event withdrawCytEVent(address player,uint256 amount,uint256 timeStamp);
@@ -61,12 +61,12 @@ contract GamePool  is ERC1155Holder, ERC721Holder,Multicall,Context{
     * @dev:  Used by players to load the asset of erc1155
     * @param: tokenId: The player wants to load the Id of the equipment. amout: the amount of erc1155
    */
-    function loadingErc1155(
+    function loadingWeapons(
         uint256 id,
         uint256 amount) external {
       IERC1155(erc1155WeaponsAddress).safeTransferFrom(_msgSender(),address(this),id,amount,"");
 
-      emit loadingErc1155Event(_msgSender(),id,amount);
+      emit loadingWeaponsEvent(_msgSender(),id,amount);
     }
 
     /*@dev: player retrieve  cyt
@@ -94,19 +94,19 @@ contract GamePool  is ERC1155Holder, ERC721Holder,Multicall,Context{
    /* @dev:  player batch retrieves the asset of erc1155
     * @param: ids: the collection to retrieve the id . amounts: The number of ids to retrieve
     */
-    function withdrawErc1155(address player,uint256[] memory ids,uint256[] memory amounts) external{
+    function withdrawWeapons(address player,uint256[] memory ids,uint256[] memory amounts) external{
           if(msg.sender != owner){
               revert Unauthorized(msg.sender);
            }
        IERC1155(erc1155WeaponsAddress).safeBatchTransferFrom(address(this),owner,ids,amounts,"0x"); 
-       emit withdrawErc1155Event(player,ids,amounts);
+       emit withdrawWeaponsEvent(player,ids,amounts);
     }
 
 
     /*@dev: player retrieves the nft
     * @param: tokenId: The player wants to load the Id of the equipment. amout: the amount of erc721
     */
-    function withdrawNft(address player,uint256 tokenId) external{
+    function withdrawRole(address player,uint256 tokenId) external{
       if(msg.sender != owner){
               revert Unauthorized(msg.sender);
            }
