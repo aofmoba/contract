@@ -125,27 +125,4 @@ contract GameLogic{
         return tokenIds;
     }
   
-  /*@dev: Used by players to update the asset of erc721
-  * @param:  payer: the address of player. ids: burn off the ids  newId: newId after successful upgrade
-  */
-   function upgradeRole(address player,uint256[] memory ids,uint256 newId)
-   external{
-      if(msg.sender != owner){
-         revert Unauthorized(msg.sender);
-       } 
-       for(uint i=0;i<ids.length;i++){
-          ICyborg(roleAddress).burn(ids[i]);
-       }
-       ICyborg(roleAddress).safeMint(player,newId);
-   }
-  
-  // used by players to update the asset of erc1155
-   function upgradeWeapons(address player,uint256[] memory ids,uint256[] memory amounts,uint256 newId,uint256 newAmount)
-    external{
-     if(msg.sender != owner){
-         revert Unauthorized(msg.sender);
-       } 
-      IErc1155Asset(erc1155WeaponsAddress).burnBatch(player,ids,amounts);
-      IErc1155Asset(erc1155WeaponsAddress).mint(player,newId,newAmount,"");
-   }
 }
