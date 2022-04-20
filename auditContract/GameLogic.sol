@@ -14,22 +14,22 @@ import "./Proof.sol";
 contract GameLogic{
   
   address public owner;
-  address public erc1155AssetAddress;
-  address public nftAddress;
+  address public erc1155WeaponsAddress;
+  address public roleAddress;
   address private signer;
   address private gamePoolAddress;
   bool _notEntered = true;
   uint256 public blockTimestampLast;
 
 
-  event createGamePropeEvent(address indexed  player,uint256 tokenId,uint256 amount);
+  event createWeaponsEvent(address indexed  player,uint256 tokenId,uint256 amount);
   event mergeToBdEvent(address from, uint256 newId);
   error Unauthorized(address caller);
   
-   constructor(address signer_,address erc1155AssetAddress_ , address nftAddress_,address gamePoolAddress_){
+   constructor(address signer_,address erc1155WeaponsAddress_ , address roleAddress_,address gamePoolAddress_){
       owner = msg.sender;
-      erc1155AssetAddress = erc1155AssetAddress_;
-      nftAddress = nftAddress_;
+      erc1155WeaponsAddress = erc1155WeaponsAddress_;
+      roleAddress = roleAddress_;
       signer = signer_;
       gamePoolAddress = gamePoolAddress_;
    }
@@ -48,7 +48,7 @@ contract GameLogic{
    function mergeToBd(uint256 newId,bytes memory signature,uint256  currentTimeStamp) public nonReentrant {
         require(currentTimeStamp > blockTimestampLast,"the proof has expired");
         require(Proof.checkPermissions(signer,newId,signature,currentTimeStamp,"ERC721_bd")==true,"You don't get the proof right");
-        ICyborg(nftAddress).safeMint(gamePoolAddress,newId);
+        ICyborg(roleAddress).safeMint(gamePoolAddress,newId);
         blockTimestampLast = currentTimeStamp;
         emit mergeToBdEvent(msg.sender,newId);
     }
@@ -62,7 +62,7 @@ contract GameLogic{
            if(msg.sender != owner){
               revert Unauthorized(msg.sender);
            }
-        ICyborg(nftAddress).safeMint(player,tokenId);   
+        ICyborg(roleAddress).safeMint(player,tokenId);   
    }
 
     /**
@@ -76,7 +76,7 @@ contract GameLogic{
         if(msg.sender != owner){
               revert Unauthorized(msg.sender);
        } 
-      ICyborg(nftAddress).burn(tokenId);
+      ICyborg(roleAddress).burn(tokenId);
    }
 
      /**
@@ -89,14 +89,14 @@ contract GameLogic{
      * - If `to` refers to a smart contract, it must implement {IERC1155Receiver-onERC1155Received} and return the
      * acceptance magic value.
      */
-    function createGamePrope(address player,uint256 tokenId,uint256 amount,bytes memory data)
+    function createWeapons(address player,uint256 tokenId,uint256 amount,bytes memory data)
         public
         returns (uint256){
         if(msg.sender != owner){
             revert Unauthorized(msg.sender);
         } 
-         IErc1155Asset(erc1155AssetAddress).mint(player, tokenId, amount, data);
-         emit createGamePropeEvent(player,tokenId,amount);
+         IErc1155Asset(erc1155WeaponsAddress).mint(player, tokenId, amount, data);
+         emit createWeaponsEvent(player,tokenId,amount);
         return tokenId;
     }
    
@@ -119,9 +119,9 @@ contract GameLogic{
 
 
       for(uint i =0;i< length;i++){
-          emit createGamePropeEvent(player,tokenIds[i],amounts[i]);
+          emit createWeaponsEvent(player,tokenIds[i],amounts[i]);
         }
-       IErc1155Asset(erc1155AssetAddress).mintBatch(player, tokenIds, amounts, data);
+       IErc1155Asset(erc1155WeaponsAddress).mintBatch(player, tokenIds, amounts, data);
         return tokenIds;
     }
   
@@ -134,9 +134,9 @@ contract GameLogic{
          revert Unauthorized(msg.sender);
        } 
        for(uint i=0;i<ids.length;i++){
-          ICyborg(nftAddress).burn(ids[i]);
+          ICyborg(roleAddress).burn(ids[i]);
        }
-       ICyborg(nftAddress).safeMint(player,newId);
+       ICyborg(roleAddress).safeMint(player,newId);
    }
   
   // used by players to update the asset of erc1155
@@ -145,7 +145,7 @@ contract GameLogic{
      if(msg.sender != owner){
          revert Unauthorized(msg.sender);
        } 
-      IErc1155Asset(erc1155AssetAddress).burnBatch(player,ids,amounts);
-      IErc1155Asset(erc1155AssetAddress).mint(player,newId,newAmount,"");
+      IErc1155Asset(erc1155WeaponsAddress).burnBatch(player,ids,amounts);
+      IErc1155Asset(erc1155WeaponsAddress).mint(player,newId,newAmount,"");
    }
 }

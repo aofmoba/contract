@@ -9,11 +9,11 @@ import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 import "@openzeppelin/contracts/utils/Multicall.sol";
 
-contract MarketV2 is ERC1155Holder, ERC721Holder,Multicall{
+contract Market is ERC1155Holder, ERC721Holder,Multicall{
 
     address public cyt;
     address public erc1155WeaponsAddress;
-    address public nftAddress;
+    address public roleAddress;
     address public lootBoxAddress;
     address private owner;
 
@@ -37,10 +37,10 @@ contract MarketV2 is ERC1155Holder, ERC721Holder,Multicall{
         _notEntered = true;
    }
 
-   constructor(address cyt_,address erc1155WeaponsAddress_,address nftAddress_,address lootBoxAddress_) {
+   constructor(address cyt_,address erc1155WeaponsAddress_,address roleAddress_,address lootBoxAddress_) {
          cyt = cyt_;
          erc1155WeaponsAddress = erc1155WeaponsAddress_;
-         nftAddress = nftAddress_;
+         roleAddress = roleAddress_;
          lootBoxAddress = lootBoxAddress_;
          owner = msg.sender;
    }
@@ -53,7 +53,7 @@ contract MarketV2 is ERC1155Holder, ERC721Holder,Multicall{
               revert Unauthorized(msg.sender);
        }
      erc721Price[tokenId] = price;
-     IERC721(nftAddress).safeTransferFrom(owner,address(this),tokenId);
+     IERC721(roleAddress).safeTransferFrom(owner,address(this),tokenId);
     }
 
 
@@ -74,7 +74,7 @@ contract MarketV2 is ERC1155Holder, ERC721Holder,Multicall{
         if(msg.sender != owner){
               revert Unauthorized(msg.sender);
        }
-       IERC721(nftAddress).safeTransferFrom(address(this),owner,tokenId); 
+       IERC721(roleAddress).safeTransferFrom(address(this),owner,tokenId); 
     }
 
 
@@ -94,7 +94,7 @@ contract MarketV2 is ERC1155Holder, ERC721Holder,Multicall{
          revert UnMatchPrice(msg.sender,tokenId,price);
       }
       IERC20(cyt).transferFrom(msg.sender,owner,price);
-      IERC721(nftAddress).safeTransferFrom(address(this),msg.sender,tokenId);
+      IERC721(roleAddress).safeTransferFrom(address(this),msg.sender,tokenId);
       emit buyNftEvent(msg.sender,tokenId,price);
     }
 
@@ -105,7 +105,7 @@ contract MarketV2 is ERC1155Holder, ERC721Holder,Multicall{
       }
       IERC20Permit(cyt).permit(msg.sender,address(this),price,deadline,v,r,s);
       IERC20(cyt).transferFrom(msg.sender,owner,price);
-      IERC721(nftAddress).safeTransferFrom(address(this),msg.sender,tokenId);
+      IERC721(roleAddress).safeTransferFrom(address(this),msg.sender,tokenId);
       emit buyNftEvent(msg.sender,tokenId,price);
     }
 

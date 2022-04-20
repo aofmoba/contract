@@ -11,8 +11,8 @@ import "./Proof.sol";
 
 contract GamePool  is ERC1155Holder, ERC721Holder,Multicall,Context{
 
-    address private erc1155AssetAddress;
-    address private nftAddress;
+    address private erc1155WeaponsAddress;
+    address private roleAddress;
     address private owner;
     address private signer;
     address private cyt;
@@ -22,12 +22,14 @@ contract GamePool  is ERC1155Holder, ERC721Holder,Multicall,Context{
     
     error Unauthorized(address caller);
 
-    event loadingNftEvent(address from,uint256 tokenId);
+    event loadingRoleEvent(address from,uint256 tokenId);
     event loadingErc1155Event(address from,uint256 id,uint256 amount);
 
     event withdrawErc1155Event(address player,uint256[] ids,uint256[] amounts);
-    event withdrawNftEvent(address player,uint256 tokenId);
+    event withdrawRoleEvent(address player,uint256 tokenId);
 
+    event withdrawCytEVent(address player,uint256 amount,uint256 timeStamp);
+    event withdrawCoinEvent(address player,uint256 amount,uint256 timeStamp);
 
     modifier nonReentrant() {
       require(_notEntered, "re-entered");
@@ -37,23 +39,22 @@ contract GamePool  is ERC1155Holder, ERC721Holder,Multicall,Context{
     }
    
 
-    constructor(address signer_, address erc1155AssetAddress_, address nftAddress_, address cyt_, address coin_){
+    constructor(address signer_, address erc1155WeaponsAddress_, address roleAddress_, address cyt_, address coin_){
      owner = _msgSender();
      signer = signer_;
-     erc1155AssetAddress = erc1155AssetAddress_;
-     nftAddress = nftAddress_;
+     erc1155WeaponsAddress = erc1155WeaponsAddress_;
+     roleAddress = roleAddress_;
      cyt = cyt_;
      coin = coin_;
    }
-      
+     
    /*
     * @dev:  Used by players to load the asset of erc721
     * @param: tokenId: The player wants to load the Id of the equipment
    */
-    function loadingNft(uint256 tokenId)  external {
-      IERC721(nftAddress).safeTransferFrom(_msgSender(),address(this),tokenId);
-      require(IERC721(nftAddress).ownerOf(tokenId) == address(this),"Please re-transfer");
-      emit loadingNftEvent(_msgSender(),tokenId);
+    function loadingRole(uint256 tokenId)  external {
+      IERC721(roleAddress).safeTransferFrom(_msgSender(),address(this),tokenId);
+      emit loadingRoleEvent(_msgSender(),tokenId);
     }
 
    /*
@@ -63,8 +64,31 @@ contract GamePool  is ERC1155Holder, ERC721Holder,Multicall,Context{
     function loadingErc1155(
         uint256 id,
         uint256 amount) external {
-      IERC1155(erc1155AssetAddress).safeTransferFrom(_msgSender(),address(this),id,amount,"");
+      IERC1155(erc1155WeaponsAddress).safeTransferFrom(_msgSender(),address(this),id,amount,"");
+
       emit loadingErc1155Event(_msgSender(),id,amount);
+    }
+
+    /*@dev: player retrieve  cyt
+     *@param: signature：proof of cyt. currentTimeStamp: timeStamp
+    */ 
+    function withdrawCyt(uint256 amount,bytes memory signature,uint256  currentTimeStamp)external nonReentrant {
+      require(currentTimeStamp > blockTimestampLast,"the proof has expired");
+      require(Proof.checkPermissions(signer,amount,signature,currentTimeStamp,"ERC20_CYT")==true,"You don't get the proof right");
+      IERC20(cyt).transfer(_msgSender(),amount);
+      blockTimestampLast = currentTimeStamp;
+      emit withdrawCytEVent(_msgSender(),amount,currentTimeStamp);
+    }
+
+    /*@dev: player retrieve  coin
+     *@param: signature：proof of cyt. currentTimeStamp: timeStamp
+    */ 
+    function withdrawCoin(uint256 amount,bytes memory signature,uint256 currentTimeStamp) external nonReentrant{
+      require(currentTimeStamp > blockTimestampLast,"the proof has expired");
+      require(Proof.checkPermissions(signer,amount,signature,currentTimeStamp,"ERC20_COIN")==true,"You don't get the proof right");
+      IERC20(coin).transfer(_msgSender(),amount);
+      blockTimestampLast = currentTimeStamp;
+      emit withdrawCoinEvent(_msgSender(),amount,currentTimeStamp);
     }
 
    /* @dev:  player batch retrieves the asset of erc1155
@@ -74,7 +98,7 @@ contract GamePool  is ERC1155Holder, ERC721Holder,Multicall,Context{
           if(msg.sender != owner){
               revert Unauthorized(msg.sender);
            }
-       IERC1155(erc1155AssetAddress).safeBatchTransferFrom(address(this),owner,ids,amounts,"0x"); 
+       IERC1155(erc1155WeaponsAddress).safeBatchTransferFrom(address(this),owner,ids,amounts,"0x"); 
        emit withdrawErc1155Event(player,ids,amounts);
     }
 
@@ -86,28 +110,10 @@ contract GamePool  is ERC1155Holder, ERC721Holder,Multicall,Context{
       if(msg.sender != owner){
               revert Unauthorized(msg.sender);
            }
-      IERC721(nftAddress).safeTransferFrom(address(this),player,tokenId);
-      emit withdrawNftEvent(player,tokenId);     
+      IERC721(roleAddress).safeTransferFrom(address(this),player,tokenId);
+      emit withdrawRoleEvent(player,tokenId);     
     }
 
-    /*@dev: player retrieve  cyt
-     *@param: signature：proof of cyt. currentTimeStamp: timeStamp
-    */ 
-    function withdrawCyt(uint256 amount,bytes memory signature,uint256  currentTimeStamp)external nonReentrant {
-      require(currentTimeStamp > blockTimestampLast,"the proof has expired");
-      require(Proof.checkPermissions(signer,amount,signature,currentTimeStamp,"ERC20_CYT")==true,"You don't get the proof right");
-      IERC20(cyt).transfer(_msgSender(),amount);
-      blockTimestampLast = currentTimeStamp;
-    }
-
-    /*@dev: player retrieve  coin
-     *@param: signature：proof of cyt. currentTimeStamp: timeStamp
-    */ 
-    function withdrawCoin(uint256 amount,bytes memory signature,uint256 currentTimeStamp) external nonReentrant{
-      require(currentTimeStamp > blockTimestampLast,"the proof has expired");
-      require(Proof.checkPermissions(signer,amount,signature,currentTimeStamp,"ERC20_COIN")==true,"You don't get the proof right");
-      IERC20(coin).transfer(_msgSender(),amount);
-      blockTimestampLast = currentTimeStamp;
-    }
+  
  
 }
