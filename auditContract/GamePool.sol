@@ -98,7 +98,7 @@ contract GamePool  is ERC1155Holder, ERC721Holder,Multicall,Context{
           if(msg.sender != owner){
               revert Unauthorized(msg.sender);
            }
-       IERC1155(erc1155WeaponsAddress).safeBatchTransferFrom(address(this),owner,ids,amounts,"0x"); 
+       IERC1155(erc1155WeaponsAddress).safeBatchTransferFrom(address(this),player,ids,amounts,"0x"); 
        emit withdrawWeaponsEvent(player,ids,amounts);
     }
 
