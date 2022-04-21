@@ -9,7 +9,7 @@ import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 import "@openzeppelin/contracts/utils/Multicall.sol";
 
-contract MarketV2 is ERC1155Holder, ERC721Holder,Multicall{
+contract Market is ERC1155Holder, ERC721Holder,Multicall{
 
     address public cyt;
     address public erc1155WeaponsAddress;
@@ -23,7 +23,7 @@ contract MarketV2 is ERC1155Holder, ERC721Holder,Multicall{
     mapping (uint256 => uint256) public erc1155Price;    
     mapping (uint256 => uint256) public erc721Price;
     
-   event buyNftEvent(address indexed  palyer,uint256 tokenId,uint256 price);
+   event buyRoleEvent(address indexed  palyer,uint256 tokenId,uint256 price);
    event buyLootBoxEvent(address indexed palyer, uint256 tokenId,uint256 price,uint256 amount);
    event buyErc1155WeaponsEvent(address indexed palyer,uint256 tokenId,uint256 price,uint256 amount);
 
@@ -60,14 +60,13 @@ contract MarketV2 is ERC1155Holder, ERC721Holder,Multicall{
     /* @dev: official listings 
     * @param: price: Commodity prices. tokenId: the id of erc1155
     */
-    function sellErc1155(address tokenAddress,uint256 price,uint256 tokenId,uint256 amount) external{
+    function sellErc1155(address tokenAddress, uint256 price,uint256 tokenId,uint256 amount) external{
        if(msg.sender != owner){
               revert Unauthorized(msg.sender);
        } 
        erc1155Price[tokenId] = price;
        IERC1155(tokenAddress).safeTransferFrom(owner,address(this),tokenId,amount,"0x");
      }
-
 
     //retrieve assets of erc721
     function withdrawNft(uint256 tokenId) external{
@@ -89,24 +88,24 @@ contract MarketV2 is ERC1155Holder, ERC721Holder,Multicall{
     /* @dev: Buy nft
     * @param: tokenId: The id number of the purchase. price: Corresponding price of id
     */
-    function buyNft(uint256 tokenId,uint256 price) external nonReentrant{
+    function buyRole(uint256 tokenId,uint256 price) external nonReentrant{
       if(price != erc721Price[tokenId]){
          revert UnMatchPrice(msg.sender,tokenId,price);
       }
       IERC20(cyt).transferFrom(msg.sender,owner,price);
       IERC721(roleAddress).safeTransferFrom(address(this),msg.sender,tokenId);
-      emit buyNftEvent(msg.sender,tokenId,price);
+      emit buyRoleEvent(msg.sender,tokenId,price);
     }
 
     // Purchase with signature
-    function buyNftWithPermit(uint256 tokenId,uint256 price,uint256 deadline, uint8 v, bytes32 r, bytes32 s) external nonReentrant{
+    function buyRoleWithPermit(uint256 tokenId,uint256 price,uint256 deadline, uint8 v, bytes32 r, bytes32 s) external nonReentrant{
       if(price != erc721Price[tokenId]){
          revert UnMatchPrice(msg.sender,tokenId,price);
       }
       IERC20Permit(cyt).permit(msg.sender,address(this),price,deadline,v,r,s);
       IERC20(cyt).transferFrom(msg.sender,owner,price);
       IERC721(roleAddress).safeTransferFrom(address(this),msg.sender,tokenId);
-      emit buyNftEvent(msg.sender,tokenId,price);
+      emit buyRoleEvent(msg.sender,tokenId,price);
     }
 
     // purchase weapons
