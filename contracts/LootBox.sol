@@ -5,14 +5,16 @@ import "./utils/LootBoxRandomness.sol";
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
-import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Burnable.sol";
+import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
+import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 
 contract LootBox is
     ERC1155,
     ERC1155Burnable,
+    ERC1155Supply,
     AccessControl,
     ReentrancyGuard,
     Pausable
@@ -98,7 +100,7 @@ contract LootBox is
         uint256[] memory ids,
         uint256[] memory amounts,
         bytes memory data
-    ) internal override {
+    ) internal override(ERC1155, ERC1155Supply) {
         super._beforeTokenTransfer(operator, from, to, ids, amounts, data);
     }
 
