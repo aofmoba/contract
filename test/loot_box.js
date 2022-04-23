@@ -44,4 +44,9 @@ contract("LootBox", function (accounts) {
     let factory = await CyberClubFactory.deployed()
     await lootbox.setFactoryForOption(0, factory.address)
   })
+
+  it("supports totalSupply", async () => {
+    let total = await lootbox.totalSupply(0)
+    assert.equal(total.toNumber(), 1)
+  })
 })
