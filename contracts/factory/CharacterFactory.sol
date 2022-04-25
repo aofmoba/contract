@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.2;
 
-import "./interfaces/IERC1155Factory.sol";
-import "./Cyborg.sol";
-import "./utils/RNG.sol";
+import "../interfaces/IERC1155Factory.sol";
+import "../Cyborg.sol";
+import "../utils/RNG.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 

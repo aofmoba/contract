@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.2;
 
-import "./interfaces/IERC1155Factory.sol";
-import "./CyberClub.sol";
-import "./CyberpopGame.sol";
-import "./LootBox.sol";
+import "../interfaces/IERC1155Factory.sol";
+import "../CyberClub.sol";
+import "../CyberpopGame.sol";
+import "../LootBox.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Receiver.sol";
 

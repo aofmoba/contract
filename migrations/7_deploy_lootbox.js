@@ -1,8 +1,6 @@
-const CyberClub = artifacts.require("CyberClub");
-const Cyborg = artifacts.require("Cyborg");
-const CyberpopGame = artifacts.require("CyberpopGame");
 const CyberClubFactory = artifacts.require("CyberClubFactory");
 const CharacterFactory = artifacts.require("CharacterFactory");
+const ConsumerableFactory = artifacts.require("ConsumerableFactory");
 const LootBox = artifacts.require("LootBox");
 const LootBoxRandomness = artifacts.require("LootBoxRandomness");
 
@@ -20,6 +18,7 @@ module.exports = async (deployer, network, accounts) => {
 
     const charFactory = await CharacterFactory.deployed()
     const cyberClubFactory = await CyberClubFactory.deployed()
+    const consumerableFactory = await ConsumerableFactory.deployed()
 
-    await setupLootBox(lootbox, cyberClubFactory, charFactory);
+    await setupLootBox(lootbox, cyberClubFactory, charFactory, consumerableFactory);
 };
