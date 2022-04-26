@@ -17,7 +17,7 @@ module.exports = async (deployer, network, accounts) => {
 
   await deployer.deploy(CyberClubFactory, club.address, badge.address)
   await deployer.deploy(CharacterFactory, cyborg.address, ChainIDPrefixes[network])
-  await deployer.deploy(CharacterFactory, badge.address, [2, 101101, 3, 4])
+  await deployer.deploy(ConsumerableFactory, badge.address, [2, 101101, 3, 4])
 
   const charFactory = await CharacterFactory.deployed()
   let minter = await cyborg.MINTER_ROLE()
