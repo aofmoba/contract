@@ -17,6 +17,9 @@ module.exports = async (deployer, network, accounts) => {
     await consumerableFactory.grantRole(minter, fixLvlCharFactory.address)
 
     const lootbox = await LootBox.deployed()
-    lootbox.addNewOption(fixLvlCharFactory.address, [9000, 1000])
-    lootbox.addNewOption(fixLvlCharFactory.address, [5000, 5000])
+    await lootbox.addNewOption(fixLvlCharFactory.address, [9000, 1000])
+    await lootbox.addNewOption(fixLvlCharFactory.address, [5000, 5000])
+
+    minter = await fixLvlCharFactory.MINTER_ROLE()
+    await fixLvlCharFactory.grantRole(minter, lootbox.address)
 };
