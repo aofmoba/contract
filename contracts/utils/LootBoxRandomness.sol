@@ -190,32 +190,6 @@ library LootBoxRandomness {
     }
 
     /**
-    function _pickRandomAvailableTokenIdForClass(
-        LootBoxRandomnessState storage _state,
-        uint256 _classId,
-        uint256 _minAmount,
-        address _owner
-    ) internal returns (uint256) {
-        require(_classId < _state.numClasses, "_class out of range");
-        uint256[] memory tokenIds = _state.classToTokenIds[_classId];
-        require(tokenIds.length > 0, "No token ids for _classId");
-        uint256 randIndex = _random(_state).mod(tokenIds.length);
-        // Make sure owner() owns or can mint enough
-        Factory factory = Factory(_state.classToFactory[_classId]);
-        for (uint256 i = randIndex; i < randIndex + tokenIds.length; i++) {
-            uint256 tokenId = tokenIds[i % tokenIds.length];
-            // We use tokenId as an option id here
-            if (factory.balanceOf(_owner, tokenId) >= _minAmount) {
-                return tokenId;
-            }
-        }
-        revert(
-            "LootBoxRandomness#_pickRandomAvailableTokenIdForClass: NOT_ENOUGH_TOKENS_FOR_CLASS"
-        );
-    }
-    */
-
-    /**
      * @dev Pseudo-random number generator
      * NOTE: to improve randomness, generate it with an oracle
      */
