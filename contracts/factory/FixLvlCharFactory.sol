@@ -46,7 +46,7 @@ contract FixLvlCharFactory is AccessControl, IERC1155Factory {
             consumerableFactory.mint(0, _to, 1, _data);
         }
         if (_optionId == 1) {
-            characterFactory.mint(1, _to, 1, _data);
+            characterFactory.mint(0, _to, 1, _data);
         }
     }
 }
