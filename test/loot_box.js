@@ -36,17 +36,28 @@ contract("LootBox", function (accounts) {
   })
 
   it("can modify probabitlies", async () => {
-    await lootbox.setProbabilitiesForOption(1, [0, 9500, 500])
+    let arr = [0, 9500, 500]
+    await lootbox.setProbabilitiesForOption(1, arr)
+    let probabilities = await lootbox.classProbabilities(1)
+    assert.deepEqual(arr, probabilities.map(p => p.toNumber()))
+
     await lootbox.unpack(1, 1, { from: userA })
   })
 
   it("can modify factory", async () => {
     let factory = await CyberClubFactory.deployed()
     await lootbox.setFactoryForOption(0, factory.address)
+    let addr = await lootbox.classFactoryAddress(0)
+    assert.equal(addr, factory.address)
   })
 
   it("supports totalSupply", async () => {
     let total = await lootbox.totalSupply(0)
     assert.equal(total.toNumber(), 1)
+  })
+
+  it("returns numOptions", async () => {
+    let total = await lootbox.numOptions()
+    assert.isTrue(total.toNumber() > 1)
   })
 })

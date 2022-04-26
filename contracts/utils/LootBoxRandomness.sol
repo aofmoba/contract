@@ -113,6 +113,37 @@ library LootBoxRandomness {
         _state.seed = _newSeed;
     }
 
+    /**
+     * @notice Query current number of options
+     */
+    function numOptions(LootBoxRandomnessState storage _state)
+        public
+        view
+        returns (uint256)
+    {
+        return _state.numOptions;
+    }
+
+    /**
+     * @notice Query class probabilities for the given option
+     */
+    function classProbabilities(
+        LootBoxRandomnessState storage _state,
+        uint256 opitonId
+    ) public view returns (uint16[] memory) {
+        return _state.classProbabilities[opitonId];
+    }
+
+    /**
+     * @notice Query factory address for the given option
+     */
+    function classFactoryAddress(
+        LootBoxRandomnessState storage _state,
+        uint256 optionId
+    ) public view returns (address) {
+        return _state.classToFactory[optionId];
+    }
+
     ///////
     // MAIN FUNCTIONS
     //////

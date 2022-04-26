@@ -141,6 +141,47 @@ contract LootBox is
         LootBoxRandomness.addNewOption(state, factoryAddress, _probabilities);
     }
 
+    /**
+     * @notice Query current number of options
+     */
+    function numOptions() public view returns (uint256) {
+        return LootBoxRandomness.numOptions(state);
+    }
+
+    /**
+     * @notice Query class probabilities for the given option
+     */
+    function classProbabilities(uint256 opitonId)
+        external
+        view
+        returns (uint16[] memory)
+    {
+        return LootBoxRandomness.classProbabilities(state, opitonId);
+    }
+
+    /**
+     * @notice Query factory address for the given option
+     */
+    function classFactoryAddress(uint256 optionId)
+        external
+        view
+        returns (address)
+    {
+        return LootBoxRandomness.classFactoryAddress(state, optionId);
+    }
+
+    function batchBalanceOf(address account)
+        public
+        view
+        returns (uint256[] memory)
+    {
+        uint256[] memory balances = new uint256[](numOptions());
+        for (uint256 i = 0; i < numOptions(); i++) {
+            balances[i] = balanceOf(account, i);
+        }
+        return balances;
+    }
+
     function setProbabilitiesForOption(
         uint256 _optionId,
         uint16[] memory _probabilities
