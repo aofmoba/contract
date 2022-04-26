@@ -42,6 +42,7 @@ contract FixLvlCharFactory is AccessControl, IERC1155Factory {
         uint256,
         bytes memory _data
     ) public override onlyRole(MINTER_ROLE) {
+        require(_optionId < 2, "FixLvlCharFactory: unexpected optionId");
         if (_optionId == 0) {
             consumerableFactory.mint(0, _to, 1, _data);
         }
