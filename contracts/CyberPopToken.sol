@@ -56,8 +56,10 @@ contract CyberPopToken is
         public
         onlyRole(DEFAULT_ADMIN_ROLE)
         whenNotPaused
+        returns (bool)
     {
         _mint(to, amount);
+        return true;
     }
 
     function _beforeTokenTransfer(
