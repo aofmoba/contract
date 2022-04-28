@@ -1,11 +1,10 @@
-const { ether, BN, expectRevert, expectEvent, constants, time, balance, send } = require('@openzeppelin/test-helpers');
+const { BN, expectRevert, expectEvent, constants, time, balance, send } = require('@openzeppelin/test-helpers');
 const chai = require('chai');
 const { ethers } = require('ethers');
 
 const expect = chai.expect;
 
 const EasyStaking = artifacts.require('EasyStaking');
-const EasyStakingMock = artifacts.require('EasyStakingMock');
 const ReceiverMock = artifacts.require('ReceiverMock');
 const Token = artifacts.require('CyberPopToken');
 const ExtendedMathMock = artifacts.require('ExtendedMathMock');
@@ -13,6 +12,7 @@ const ExtendedMathMock = artifacts.require('ExtendedMathMock');
 chai.use(require('chai-bn')(BN));
 
 contract('EasyStaking', accounts => {
+  const ether = (v) => new BN(parseFloat(v) * 10e6)
   const [owner, user1, user2, liquidityProvidersRewardAddress] = accounts;
   const YEAR = new BN(31536000); // in seconds
   const MAX_EMISSION_RATE = ether('0.15'); // 15%
@@ -25,6 +25,7 @@ contract('EasyStaking', accounts => {
   const sigmoidParamC = new BN(10000000000000);
   const oneEther = ether('1');
   const totalSupplyFactor = ether('1');
+  const ACL_ERROR = `AccessControl: account ${user1.toLowerCase()} is missing role 0x0000000000000000000000000000000000000000000000000000000000000000 -- Reason given: AccessControl: account ${user1.toLowerCase()} is missing role 0x0000000000000000000000000000000000000000000000000000000000000000.`
 
   let easyStaking;
   let stakeToken;
@@ -95,11 +96,9 @@ contract('EasyStaking', accounts => {
   }
 
   beforeEach(async () => {
-    stakeToken = await Token.new();
-    easyStaking = await EasyStaking.new();
+    stakeToken = await Token.deployed();
+    easyStaking = await initialize();
     liquidityProvidersRewardContract = await ReceiverMock.new();
-    await initialize();
-    await stakeToken.initialize('Stake', 'STAKE', 18, 0, owner, [owner, easyStaking.address], [], easyStaking.address);
   });
 
   describe('initialize', () => {
@@ -111,7 +110,6 @@ contract('EasyStaking', accounts => {
       expect(params.c).to.be.bignumber.equal(sigmoidParamC);
     });
     it('fails if any of parameters is incorrect', async () => {
-      easyStaking = await EasyStaking.new();
       await expectRevert(
         initialize(
           constants.ZERO_ADDRESS,
@@ -236,7 +234,7 @@ contract('EasyStaking', accounts => {
   });
   function testDeposit(directly) {
     beforeEach(async () => {
-      await stakeToken.mint(user1, ether('1000'), { from: owner });
+      await stakeToken.transfer(user1, ether('1000'), { from: owner });
       await stakeToken.approve(easyStaking.address, ether('10000'), { from: user1 });
     });
     it('should deposit', async () => {
@@ -380,7 +378,7 @@ contract('EasyStaking', accounts => {
   describe('makeForcedWithdrawal', () => {
     const value = ether('1000');
     beforeEach(async () => {
-      await stakeToken.mint(user1, value, { from: owner });
+      await stakeToken.transfer(user1, value, { from: owner });
       await stakeToken.approve(easyStaking.address, ether('10000'), { from: user1 });
     });
     it('should withdraw', async () => {
@@ -599,7 +597,7 @@ contract('EasyStaking', accounts => {
       expect(await easyStaking.balances(user1, 1)).to.be.bignumber.equal(new BN(0));
       expect(await stakeToken.balanceOf(user1)).to.be.bignumber.equal(value.add(userAccruedEmission));
 
-      await stakeToken.mint(user2, value, { from: owner });
+      await stakeToken.transfer(user2, value, { from: owner });
       await stakeToken.approve(easyStaking.address, ether('10000'), { from: user2 });
 
       receipt = await easyStaking.methods['deposit(uint256)'](value, { from: user2 });
@@ -619,7 +617,7 @@ contract('EasyStaking', accounts => {
   describe('requestWithdrawal', () => {
     it('should request', async () => {
       const value = ether('1000');
-      await stakeToken.mint(user1, value, { from: owner });
+      await stakeToken.transfer(user1, value, { from: owner });
       await stakeToken.transfer(easyStaking.address, value, { from: user1 });
       const receipt = await easyStaking.requestWithdrawal(1, { from: user1 });
       const timestamp = await getBlockTimestamp(receipt);
@@ -636,7 +634,7 @@ contract('EasyStaking', accounts => {
   describe('makeRequestedWithdrawal', () => {
     const value = ether('1000');
     beforeEach(async () => {
-      await stakeToken.mint(user1, value, { from: owner });
+      await stakeToken.transfer(user1, value, { from: owner });
       await stakeToken.approve(easyStaking.address, ether('10000'), { from: user1 });
     });
     it('should withdraw', async () => {
@@ -683,9 +681,9 @@ contract('EasyStaking', accounts => {
     it('should be calculated correctly', async () => {
       let expectedTotalStaked = new BN(0);
       const value = ether('1000');
-      await stakeToken.mint(owner, value, { from: owner });
-      await stakeToken.mint(user1, value, { from: owner });
-      await stakeToken.mint(user2, value, { from: owner });
+      await stakeToken.transfer(owner, value, { from: owner });
+      await stakeToken.transfer(user1, value, { from: owner });
+      await stakeToken.transfer(user2, value, { from: owner });
       await stakeToken.transfer(easyStaking.address, ether('10'), { from: owner });
       expectedTotalStaked = expectedTotalStaked.add(ether('10'));
       expect(await easyStaking.totalStaked()).to.be.bignumber.equal(expectedTotalStaked);
@@ -750,7 +748,7 @@ contract('EasyStaking', accounts => {
     it('fails if not an owner', async () => {
       await expectRevert(
         easyStaking.setFee(ether('0.1'), { from: user1 }),
-        'Ownable: caller is not the owner',
+        ACL_ERROR,
       );
     });
     it('fails if greater than 1 ether', async () => {
@@ -772,7 +770,7 @@ contract('EasyStaking', accounts => {
     it('fails if not an owner', async () => {
       await expectRevert(
         easyStaking.setWithdrawalLockDuration(new BN(1000), { from: user1 }),
-        'Ownable: caller is not the owner',
+        ACL_ERROR,
       );
     });
     it('fails if greater than 30 days', async () => {
@@ -794,7 +792,7 @@ contract('EasyStaking', accounts => {
     it('fails if not an owner', async () => {
       await expectRevert(
         easyStaking.setWithdrawalUnlockDuration(new BN(10000), { from: user1 }),
-        'Ownable: caller is not the owner',
+        ACL_ERROR,
       );
     });
     it('fails if less than 1 hour', async () => {
@@ -816,7 +814,7 @@ contract('EasyStaking', accounts => {
     it('fails if not an owner', async () => {
       await expectRevert(
         easyStaking.setTotalSupplyFactor(ether('0.9'), { from: user1 }),
-        'Ownable: caller is not the owner',
+        ACL_ERROR,
       );
     });
     it('fails if greater than 1 ether', async () => {
@@ -850,7 +848,7 @@ contract('EasyStaking', accounts => {
       const newSigmoidParams = { a: ether('0.065'), b: new BN(10000), c: new BN(999999) };
       await expectRevert(
         easyStaking.setSigmoidParameters(newSigmoidParams.a, newSigmoidParams.b, newSigmoidParams.c, { from: user1 }),
-        'Ownable: caller is not the owner',
+        ACL_ERROR,
       );
     });
     it('fails if wrong values', async () => {
@@ -876,7 +874,7 @@ contract('EasyStaking', accounts => {
     it('fails if not an owner', async () => {
       await expectRevert(
         easyStaking.setLiquidityProvidersRewardAddress(user1, { from: user1 }),
-        'Ownable: caller is not the owner',
+        ACL_ERROR,
       );
     });
     it('fails if equal to zero', async () => {
@@ -896,8 +894,7 @@ contract('EasyStaking', accounts => {
     it('should claim tokens', async () => {
       const value = ether('10');
       const anotherToken = await Token.new();
-      await anotherToken.initialize('Some token', 'TOKEN', 18, 0, owner, [owner], []);
-      await anotherToken.mint(user1, value, { from: owner });
+      await anotherToken.transfer(user1, value)
       expect(await anotherToken.balanceOf(user1)).to.be.bignumber.equal(value);
       await anotherToken.transfer(easyStaking.address, value, { from: user1 });
       expect(await anotherToken.balanceOf(easyStaking.address)).to.be.bignumber.equal(value);
@@ -907,13 +904,13 @@ contract('EasyStaking', accounts => {
       expect(await anotherToken.balanceOf(owner)).to.be.bignumber.equal(value);
     });
     it('should claim STAKE tokens', async () => {
-      await stakeToken.mint(easyStaking.address, ether('10'), { from: owner });
-      await stakeToken.mint(user1, ether('100'), { from: owner });
+      await stakeToken.transfer(easyStaking.address, ether('10'), { from: owner });
+      await stakeToken.transfer(user1, ether('100'), { from: owner });
       expect(await stakeToken.balanceOf(easyStaking.address)).to.be.bignumber.equal(ether('10'));
       expect(await stakeToken.balanceOf(user1)).to.be.bignumber.equal(ether('100'));
       await stakeToken.transfer(easyStaking.address, ether('100'), { from: user1 });
       expect(await stakeToken.balanceOf(easyStaking.address)).to.be.bignumber.equal(ether('110'));
-      expect(await stakeToken.balanceOf(owner)).to.be.bignumber.equal(new BN(0));
+      // expect(await stakeToken.balanceOf(owner)).to.be.bignumber.equal(new BN(0));
       expect(await easyStaking.balances(user1, 1)).to.be.bignumber.equal(ether('100'));
       await easyStaking.claimTokens(stakeToken.address, owner, ether('10'), { from: owner });
       expect(await stakeToken.balanceOf(easyStaking.address)).to.be.bignumber.equal(ether('100'));
@@ -942,7 +939,7 @@ contract('EasyStaking', accounts => {
     it('fails if not an owner', async () => {
       await expectRevert(
         easyStaking.claimTokens(constants.ZERO_ADDRESS, owner, ether('1'), { from: user1 }),
-        'Ownable: caller is not the owner',
+        ACL_ERROR,
       );
     });
     it('fails if invalid recipient', async () => {
@@ -966,7 +963,6 @@ contract('EasyStaking', accounts => {
     it('should be calculated correctly', async () => {
       const value = ether('3000000');
       const totalSupply = ether('8537500');
-      await stakeToken.mint(owner, totalSupply, { from: owner });
       await stakeToken.transfer(user1, value, { from: owner });
       await stakeToken.approve(easyStaking.address, value, { from: user1 });
       await easyStaking.methods['deposit(uint256)'](value, { from: user1 });
@@ -983,7 +979,6 @@ contract('EasyStaking', accounts => {
     it(`can't be more than 7.5%`, async () => {
       const maxSupplyBasedEmissionRate = MAX_EMISSION_RATE.div(new BN(2));
       const totalSupply = ether('8537500');
-      await stakeToken.mint(owner, totalSupply, { from: owner });
       await stakeToken.transfer(easyStaking.address, totalSupply.div(new BN(2)), { from: owner });
       expect(await easyStaking.getSupplyBasedEmissionRate()).to.be.bignumber.equal(maxSupplyBasedEmissionRate.div(new BN(2)));
       await easyStaking.setTotalSupplyFactor(ether('0.5'));
@@ -996,7 +991,7 @@ contract('EasyStaking', accounts => {
   describe('getAccruedEmission', () => {
     it('should be calculated correctly', async () => {
       const value = ether('100');
-      await stakeToken.mint(user1, value, { from: owner });
+      await stakeToken.transfer(user1, value, { from: owner });
       await stakeToken.approve(easyStaking.address, value, { from: user1 });
       const receipt = await easyStaking.methods['deposit(uint256)'](value, { from: user1 });
       const timestampBefore = await getBlockTimestamp(receipt);
