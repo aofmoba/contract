@@ -18,7 +18,8 @@ contract GamePool  is ERC1155Holder, ERC721Holder,Multicall,Context{
     address private cyt;
     address private coin;
     bool _notEntered = true;
-    uint256 public blockTimestampLast;
+
+    mapping(bytes => uint256) private proofMapping;
     
     error Unauthorized(address caller);
 
@@ -65,7 +66,6 @@ contract GamePool  is ERC1155Holder, ERC721Holder,Multicall,Context{
         uint256 id,
         uint256 amount) external {
       IERC1155(erc1155WeaponsAddress).safeTransferFrom(_msgSender(),address(this),id,amount,"");
-
       emit loadingWeaponsEvent(_msgSender(),id,amount);
     }
 
@@ -73,10 +73,10 @@ contract GamePool  is ERC1155Holder, ERC721Holder,Multicall,Context{
      *@param: signature：proof of cyt. currentTimeStamp: timeStamp
     */ 
     function withdrawCyt(uint256 amount,bytes memory signature,uint256  currentTimeStamp)external nonReentrant {
-      require(currentTimeStamp > blockTimestampLast,"the proof has expired");
+      require(proofMapping[signature] == 0,"Proof has expired");
       require(Proof.checkPermissions(signer,amount,signature,currentTimeStamp,"ERC20_CYT")==true,"You don't get the proof right");
       IERC20(cyt).transfer(_msgSender(),amount);
-      blockTimestampLast = currentTimeStamp;
+      proofMapping[signature] = 1;        
       emit withdrawCytEVent(_msgSender(),amount,currentTimeStamp);
     }
 
@@ -84,10 +84,10 @@ contract GamePool  is ERC1155Holder, ERC721Holder,Multicall,Context{
      *@param: signature：proof of cyt. currentTimeStamp: timeStamp
     */ 
     function withdrawCoin(uint256 amount,bytes memory signature,uint256 currentTimeStamp) external nonReentrant{
-      require(currentTimeStamp > blockTimestampLast,"the proof has expired");
+      require(proofMapping[signature] == 0,"Proof has expired");
       require(Proof.checkPermissions(signer,amount,signature,currentTimeStamp,"ERC20_COIN")==true,"You don't get the proof right");
       IERC20(coin).transfer(_msgSender(),amount);
-      blockTimestampLast = currentTimeStamp;
+      proofMapping[signature] = 1;        
       emit withdrawCoinEvent(_msgSender(),amount,currentTimeStamp);
     }
 
@@ -113,7 +113,4 @@ contract GamePool  is ERC1155Holder, ERC721Holder,Multicall,Context{
       IERC721(roleAddress).safeTransferFrom(address(this),player,tokenId);
       emit withdrawRoleEvent(player,tokenId);     
     }
-
-  
- 
 }
