@@ -6,6 +6,7 @@ import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "./CyberPopToken.sol";
 import "./utils/Sacrifice.sol";
 import "./utils/Sigmoid.sol";
 
@@ -19,6 +20,7 @@ import "./utils/Sigmoid.sol";
 contract EasyStaking is AccessControl, ReentrancyGuard {
     using Address for address;
     using SafeMath for uint256;
+    using SafeERC20 for CyberPopToken;
     using SafeERC20 for IERC20;
     using Sigmoid for Sigmoid.State;
 
@@ -113,12 +115,12 @@ contract EasyStaking is AccessControl, ReentrancyGuard {
 
     uint256 private constant YEAR = 365 days;
     // The maximum emission rate (in percentage)
-    uint256 public constant MAX_EMISSION_RATE = 150 * 10e15; // 15%, 0.15 ether
+    uint256 public constant MAX_EMISSION_RATE = 150 * 10e3; // 15%, 0.15 ether
     // The period after which the new value of the parameter is set
     uint256 public constant PARAM_UPDATE_DELAY = 7 days;
 
-    // STAKE token
-    IERC20 public token;
+    // CYT token
+    CyberPopToken public token;
 
     struct UintParam {
         uint256 oldValue;
@@ -187,7 +189,7 @@ contract EasyStaking is AccessControl, ReentrancyGuard {
     ) {
         require(_owner != address(0), "zero address");
         require(_tokenAddress.isContract(), "not a contract address");
-        token = IERC20(_tokenAddress);
+        token = CyberPopToken(_tokenAddress);
         _updateUintParam(feeParam, _fee);
         _updateUintParam(withdrawalLockDurationParam, _withdrawalLockDuration);
         _updateUintParam(
@@ -351,7 +353,7 @@ contract EasyStaking is AccessControl, ReentrancyGuard {
      * @param _value The new fee value (in percentage).
      */
     function setFee(uint256 _value) external onlyRole(DEFAULT_ADMIN_ROLE) {
-        require(_value <= 1 ether, "should be less than or equal to 1 ether");
+        require(_value <= 10e6, "should be less than or equal to 1 ether");
         _updateUintParam(feeParam, _value);
         emit FeeSet(_value, msg.sender);
     }
@@ -393,7 +395,7 @@ contract EasyStaking is AccessControl, ReentrancyGuard {
         external
         onlyRole(DEFAULT_ADMIN_ROLE)
     {
-        require(_value <= 1 ether, "should be less than or equal to 1 ether");
+        require(_value <= 10e6, "should be less than or equal to 1 ether");
         _updateUintParam(totalSupplyFactorParam, _value);
         emit TotalSupplyFactorSet(_value, msg.sender);
     }
@@ -491,7 +493,7 @@ contract EasyStaking is AccessControl, ReentrancyGuard {
         uint256 totalSupply = token.totalSupply();
         uint256 factor = totalSupplyFactor();
         if (factor == 0) return 0;
-        uint256 target = totalSupply.mul(factor).div(1 ether);
+        uint256 target = totalSupply.mul(factor).div(token.decimals());
         uint256 maxSupplyBasedEmissionRate = MAX_EMISSION_RATE.div(2); // 7.5%
         if (totalStaked >= target) {
             return maxSupplyBasedEmissionRate;
@@ -520,11 +522,9 @@ contract EasyStaking is AccessControl, ReentrancyGuard {
         userEmissionRate = userEmissionRate.add(getSupplyBasedEmissionRate());
         if (userEmissionRate == 0) return (0, 0, timePassed);
         assert(userEmissionRate <= MAX_EMISSION_RATE);
-        total = _amount.mul(MAX_EMISSION_RATE).mul(timePassed).div(
-            YEAR * 1 ether
-        );
+        total = _amount.mul(MAX_EMISSION_RATE).mul(timePassed).div(YEAR * 10e6);
         userShare = _amount.mul(userEmissionRate).mul(timePassed).div(
-            YEAR * 1 ether
+            YEAR * 10e6
         );
     }
 
@@ -608,7 +608,7 @@ contract EasyStaking is AccessControl, ReentrancyGuard {
         }
         uint256 feeValue = 0;
         if (_forced) {
-            feeValue = amount.mul(fee()).div(1 ether);
+            feeValue = amount.mul(fee()).div(10e6);
             amount = amount.sub(feeValue);
             require(
                 token.transfer(liquidityProvidersRewardAddress(), feeValue),
