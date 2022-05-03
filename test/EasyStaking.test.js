@@ -15,7 +15,7 @@ chai.use(require('chai-bn')(BN));
 
 contract('EasyStaking', accounts => {
   const ether = (v) => new BN(parseFloat(v) * 1e6)
-  const [owner, user1, user2, liquidityProvidersRewardAddress] = accounts;
+  const [owner, user1, user2, liquidityProvidersRewardAddress, user4] = accounts;
   const YEAR = new BN(31536000); // in seconds
   const MAX_EMISSION_RATE = ether('0.15'); // 15%
   const PARAM_UPDATE_DELAY = new BN(604800); // 7 days in seconds
@@ -288,9 +288,9 @@ contract('EasyStaking', accounts => {
       expect(await easyStaking.totalStaked()).to.be.bignumber.equal(value.add(value).add(userAccruedEmission));
     });
     it('should deposit using an old id', async () => {
-      let reserve = ether('1000')
+      let reserve = ether('100')
       await stakeToken.increaseAllowance(easyStaking.address, reserve)
-      // await easyStaking.depositReserve(reserve)
+      await easyStaking.depositReserve(reserve)
       await easyStaking.setFee(0, { from: owner });
       const value = ether('100');
       if (directly) {
@@ -380,9 +380,16 @@ contract('EasyStaking', accounts => {
   });
   describe('makeForcedWithdrawal', () => {
     const value = ether('1000');
+    before(async () => {
+      await stakeToken.increaseAllowance(easyStaking.address, ether('1000'))
+      await easyStaking.depositReserve(ether('1000'))
+    })
+
     beforeEach(async () => {
+      let b = await stakeToken.balanceOf(user1);
+      await stakeToken.transfer(owner, b, { from: user1 }); // clean balance
       await stakeToken.transfer(user1, value, { from: owner });
-      await stakeToken.approve(easyStaking.address, ether('10000'), { from: user1 });
+      await stakeToken.increaseAllowance(easyStaking.address, value, { from: user1 });
     });
     it('should withdraw', async () => {
       let receipt = await easyStaking.methods['deposit(uint256)'](value, { from: user1 });
@@ -446,6 +453,7 @@ contract('EasyStaking', accounts => {
       await time.increase(YEAR.div(new BN(8)));
       const totalSupply = await stakeToken.totalSupply();
       const totalStaked = await easyStaking.totalStaked();
+      let remainingBalance = await stakeToken.balanceOf(user1);
       receipt = await easyStaking.makeForcedWithdrawal(1, 0, { from: user1 });
       const timestampAfter = await getBlockTimestamp(receipt);
       const timePassed = timestampAfter.sub(timestampBefore);
@@ -454,11 +462,12 @@ contract('EasyStaking', accounts => {
       expect(userShare).to.be.bignumber.gt(new BN(0));
       expect(feeValue).to.be.bignumber.gt(new BN(0));
       expect(await easyStaking.balances(user1, 1)).to.be.bignumber.equal(new BN(0));
-      expect(await stakeToken.balanceOf(user1)).to.be.bignumber.equal(value.add(userShare).sub(feeValue));
+      expect(await stakeToken.balanceOf(user1)).to.be.bignumber.equal(remainingBalance.add(value.add(userShare).sub(feeValue)));
       expect(await stakeToken.balanceOf(liquidityProvidersRewardAddress)).to.be.bignumber.equal(liquidityProvidersReward.add(feeValue));
     });
     it('should withdraw part and accrue emission', async () => {
       let receipt = await easyStaking.methods['deposit(uint256)'](value, { from: user1 });
+      let remainingBalance = await stakeToken.balanceOf(user1);
       const timestampBefore = await getBlockTimestamp(receipt);
       await time.increase(YEAR.div(new BN(8)));
       const totalSupply = await stakeToken.totalSupply();
@@ -471,7 +480,7 @@ contract('EasyStaking', accounts => {
       expect(userAccruedEmission).to.be.bignumber.gt(new BN(0));
       expect(feeValue).to.be.bignumber.gt(new BN(0));
       expect(await easyStaking.balances(user1, 1)).to.be.bignumber.equal(value.sub(oneEther));
-      expect(await stakeToken.balanceOf(user1)).to.be.bignumber.equal(oneEther.add(userAccruedEmission).sub(feeValue));
+      expect(await stakeToken.balanceOf(user1)).to.be.bignumber.equal(remainingBalance.add(oneEther.add(userAccruedEmission).sub(feeValue)));
     });
     it('should accrue emission for different users from 1 address', async () => {
       const exchange = user1;
@@ -529,7 +538,7 @@ contract('EasyStaking', accounts => {
       await time.increase(YEAR);
       await expectRevert(
         easyStaking.makeForcedWithdrawal(1, ether('10.000001'), { from: user1 }),
-        'ERC20: transfer amount exceeds balance'
+        'insufficient funds'
       );
       await easyStaking.makeForcedWithdrawal(1, ether('10'), { from: user1 });
     });
@@ -640,11 +649,15 @@ contract('EasyStaking', accounts => {
   describe('makeRequestedWithdrawal', () => {
     const value = ether('1000');
     beforeEach(async () => {
+      await stakeToken.increaseAllowance(easyStaking.address, ether('100'));
+      await easyStaking.depositReserve(ether('100'));
+
       await stakeToken.transfer(user1, value, { from: owner });
       await stakeToken.approve(easyStaking.address, ether('10000'), { from: user1 });
     });
     it('should withdraw', async () => {
       let receipt = await easyStaking.methods['deposit(uint256)'](value, { from: user1 });
+      let remainingBalance = await stakeToken.balanceOf(user1)
       const timestampBefore = await getBlockTimestamp(receipt);
       await easyStaking.requestWithdrawal(1, { from: user1 });
       await time.increase(withdrawalLockDuration);
@@ -656,7 +669,7 @@ contract('EasyStaking', accounts => {
       const userAccruedEmission = calculateUserAccruedEmission(value, timePassed, totalSupply, totalStaked);
       expect(await easyStaking.withdrawalRequestsDates(user1, 1)).to.be.bignumber.equal(new BN(0));
       expect(await easyStaking.balances(user1, 1)).to.be.bignumber.equal(new BN(0));
-      expect(await stakeToken.balanceOf(user1)).to.be.bignumber.equal(value.add(userAccruedEmission));
+      expect(await stakeToken.balanceOf(user1)).to.be.bignumber.equal(remainingBalance.add(value.add(userAccruedEmission)));
       expectEvent(receipt, 'Withdrawn', {
         sender: user1,
         amount: value.add(userAccruedEmission),

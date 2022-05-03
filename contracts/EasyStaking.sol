@@ -631,12 +631,9 @@ contract EasyStaking is AccessControl, ReentrancyGuard {
         if (_forced) {
             feeValue = amount.mul(fee()).div(1e6);
             amount = amount.sub(feeValue);
-            require(
-                token.transfer(liquidityProvidersRewardAddress(), feeValue),
-                "transfer failed"
-            );
+            token.transfer(liquidityProvidersRewardAddress(), feeValue);
         }
-        require(token.transfer(_sender, amount), "transfer failed");
+        token.transfer(_sender, amount);
         emit Withdrawn(
             _sender,
             _id,
