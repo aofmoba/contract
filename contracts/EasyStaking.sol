@@ -6,6 +6,7 @@ import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 import "./CyberPopToken.sol";
 import "./utils/Sacrifice.sol";
 import "./utils/Sigmoid.sol";
@@ -115,7 +116,7 @@ contract EasyStaking is AccessControl, ReentrancyGuard {
 
     uint256 private constant YEAR = 365 days;
     // The maximum emission rate (in percentage)
-    uint256 public constant MAX_EMISSION_RATE = 150 * 10e3; // 15%, 0.15 ether
+    uint256 public constant MAX_EMISSION_RATE = 150 * 1e3; // 15%, 0.15 ether
     // The period after which the new value of the parameter is set
     uint256 public constant PARAM_UPDATE_DELAY = 7 days;
 
@@ -190,15 +191,29 @@ contract EasyStaking is AccessControl, ReentrancyGuard {
         require(_owner != address(0), "zero address");
         require(_tokenAddress.isContract(), "not a contract address");
         token = CyberPopToken(_tokenAddress);
-        require(_fee <= 10 ** token.decimals(), "should be less than or equal to 1");
+        uint256 one = 10**token.decimals();
+        require(_fee <= one, "should be less than or equal to 1");
         _updateUintParam(feeParam, _fee);
+        require(
+            _withdrawalLockDuration <= 30 days,
+            "shouldn't be greater than 30 days"
+        );
         _updateUintParam(withdrawalLockDurationParam, _withdrawalLockDuration);
+        require(
+            _withdrawalUnlockDuration >= 1 hours,
+            "shouldn't be less than 1 hour"
+        );
         _updateUintParam(
             withdrawalUnlockDurationParam,
             _withdrawalUnlockDuration
         );
-        require(_totalSupplyFactor <= 10 ** token.decimals(), "should be less than or equal to 1");
+        require(_totalSupplyFactor <= one, "should be less than or equal to 1");
         _updateUintParam(totalSupplyFactorParam, _totalSupplyFactor);
+        require(
+            _sigmoidParamA <= MAX_EMISSION_RATE.div(2),
+            "should be less than or equal to a half of the maximum emission rate"
+        );
+
         sigmoid.setParameters(_sigmoidParamA, _sigmoidParamB, _sigmoidParamC);
         _setLiquidityProvidersRewardAddress(_liquidityProvidersRewardAddress);
         _grantRole(DEFAULT_ADMIN_ROLE, _owner);
@@ -236,11 +251,13 @@ contract EasyStaking is AccessControl, ReentrancyGuard {
         _deposit(msg.sender, _depositId, _amount);
     }
 
-
     /**
      * @notice Transfer reserved token for staking rewards, as CYT is capped and preminted
      */
-    function depositReserve(uint256 _amount) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    function depositReserve(uint256 _amount)
+        external
+        onlyRole(DEFAULT_ADMIN_ROLE)
+    {
         token.transferFrom(msg.sender, address(this), _amount);
     }
 
@@ -335,16 +352,17 @@ contract EasyStaking is AccessControl, ReentrancyGuard {
         );
         require(_amount > 0, "amount should be greater than 0");
         if (_token == address(0)) {
-            if (!_to.send(_amount)) {
+            (bool success, ) = _to.call{value: _amount}("");
+            if (!success) {
                 // solium-disable-line security/no-send
-                (new Sacrifice){value: _amount}(_to);
+                // (new Sacrifice){value: _amount}(_to);
             }
         } else if (_token == address(token)) {
             uint256 availableAmount = token.balanceOf(address(this)).sub(
                 totalStaked
             );
             require(availableAmount >= _amount, "insufficient funds");
-            require(token.transfer(_to, _amount), "transfer failed");
+            token.transfer(_to, _amount);
         } else {
             IERC20 customToken = IERC20(_token);
             customToken.safeTransfer(_to, _amount);
@@ -356,7 +374,7 @@ contract EasyStaking is AccessControl, ReentrancyGuard {
      * @param _value The new fee value (in percentage).
      */
     function setFee(uint256 _value) external onlyRole(DEFAULT_ADMIN_ROLE) {
-        require(_value <= 10e6, "should be less than or equal to 1 ether");
+        require(_value <= 1e6, "should be less than or equal to 1 ether");
         _updateUintParam(feeParam, _value);
         emit FeeSet(_value, msg.sender);
     }
@@ -398,7 +416,7 @@ contract EasyStaking is AccessControl, ReentrancyGuard {
         external
         onlyRole(DEFAULT_ADMIN_ROLE)
     {
-        require(_value <= 10e6, "should be less than or equal to 1 ether");
+        require(_value <= 1e6, "should be less than or equal to 1 ether");
         _updateUintParam(totalSupplyFactorParam, _value);
         emit TotalSupplyFactorSet(_value, msg.sender);
     }
@@ -525,9 +543,9 @@ contract EasyStaking is AccessControl, ReentrancyGuard {
         userEmissionRate = userEmissionRate.add(getSupplyBasedEmissionRate());
         if (userEmissionRate == 0) return (0, 0, timePassed);
         assert(userEmissionRate <= MAX_EMISSION_RATE);
-        total = _amount.mul(MAX_EMISSION_RATE).mul(timePassed).div(YEAR * 10e6);
+        total = _amount.mul(MAX_EMISSION_RATE).mul(timePassed).div(YEAR * 1e6);
         userShare = _amount.mul(userEmissionRate).mul(timePassed).div(
-            YEAR * 10e6
+            YEAR * 1e6
         );
     }
 
@@ -611,7 +629,7 @@ contract EasyStaking is AccessControl, ReentrancyGuard {
         }
         uint256 feeValue = 0;
         if (_forced) {
-            feeValue = amount.mul(fee()).div(10e6);
+            feeValue = amount.mul(fee()).div(1e6);
             amount = amount.sub(feeValue);
             require(
                 token.transfer(liquidityProvidersRewardAddress(), feeValue),
