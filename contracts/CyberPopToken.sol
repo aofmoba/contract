@@ -18,7 +18,7 @@ contract CyberPopToken is
     using Address for address;
 
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
-    uint256 public CAP = 120 * 10e12 * 10**decimals();
+    uint256 public CAP = 120 * 1e9 * 10**decimals();
 
     constructor() ERC20("CyberPopToken", "CYT") ERC20Permit("CyberPopToken") {
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
