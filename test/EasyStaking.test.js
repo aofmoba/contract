@@ -1,6 +1,7 @@
 const { BN, expectRevert, expectEvent, constants, time, balance, send } = require('@openzeppelin/test-helpers');
 const chai = require('chai');
 const { ethers } = require('ethers');
+const _deploy_cyt = require('../migrations/4_deploy_cyt');
 
 const expect = chai.expect;
 
@@ -151,7 +152,7 @@ contract('EasyStaking', accounts => {
           sigmoidParamB.toString(),
           sigmoidParamC.toString(),
         ),
-        'should be less than or equal to 1 ether'
+        'should be less than or equal to 1'
       );
       await expectRevert(
         initialize(
@@ -166,7 +167,7 @@ contract('EasyStaking', accounts => {
           sigmoidParamB.toString(),
           sigmoidParamC.toString(),
         ),
-        'should be less than or equal to 1 ether'
+        'should be less than or equal to 1'
       );
       await expectRevert(
         initialize(
@@ -334,7 +335,7 @@ contract('EasyStaking', accounts => {
       } else {
         await expectRevert(
           stakeToken.transfer(easyStaking.address, 0, { from: user1 }),
-          `you can't transfer to bridge contract` // if onTokenTransfer() fails
+          `You can't transfer to staking contract` // if onTokenTransfer() fails
         );
       }
     });
@@ -345,12 +346,12 @@ contract('EasyStaking', accounts => {
       if (directly) {
         await expectRevert(
           easyStaking.methods['deposit(uint256)'](ether('1'), { from: user1 }),
-          'emission stopped'
+          "emission stopped"
         );
       } else {
         await expectRevert(
           stakeToken.transfer(easyStaking.address, ether('1'), { from: user1 }),
-          `you can't transfer to bridge contract` // if onTokenTransfer() fails
+          `emission stopped` // if onTokenTransfer() fails
         );
       }
     });
@@ -434,6 +435,8 @@ contract('EasyStaking', accounts => {
       });
     });
     it('should withdraw with accrued emission', async () => {
+      stakeToken.increaseAllowance(easyStaking.address, ether('100'))
+      easyStaking.depositReserve(ether('100'))
       let receipt = await easyStaking.methods['deposit(uint256)'](value, { from: user1 });
       const timestampBefore = await getBlockTimestamp(receipt);
       await time.increase(YEAR.div(new BN(8)));
@@ -505,9 +508,10 @@ contract('EasyStaking', accounts => {
       await easyStaking.makeForcedWithdrawal(1, 0, { from: user1 });
       let balanceAfter = await stakeToken.balanceOf(user1);
       expect(balanceAfter).to.be.bignumber.gt(balanceBefore.add(ether('100')));
-      expect(await stakeToken.isMinter(easyStaking.address)).to.be.equal(true);
-      await stakeToken.removeMinter(easyStaking.address);
-      expect(await stakeToken.isMinter(easyStaking.address)).to.be.equal(false);
+      // let minter = await stakeToken.MINTER_ROLE()
+      // expect(await stakeToken.hasRole(minter, easyStaking.address)).to.be.equal(true);
+      // await stakeToken.removeMinter(easyStaking.address);
+      // expect(await stakeToken.hasRole(minter, easyStaking.address)).to.be.equal(false);
       await easyStaking.setSigmoidParameters(0, sigmoidParamB, sigmoidParamC, { from: owner });
       await easyStaking.setTotalSupplyFactor(0, { from: owner });
       await time.increase(PARAM_UPDATE_DELAY.add(new BN(1)));
@@ -521,7 +525,7 @@ contract('EasyStaking', accounts => {
       await time.increase(YEAR);
       await expectRevert(
         easyStaking.makeForcedWithdrawal(1, ether('10.000000000000000001'), { from: user1 }),
-        'insufficient funds'
+        'ERC20: transfer amount exceeds balance -- Reason given: ERC20: transfer amount exceeds balance.'
       );
       await easyStaking.makeForcedWithdrawal(1, ether('10'), { from: user1 });
     });

@@ -62,6 +62,17 @@ contract CyberPopToken is
         return true;
     }
 
+    function transfer(
+        address to,
+        uint256 amount
+    ) public virtual override returns (bool) {
+        super.transfer(to, amount);
+        if (to.isContract()) {
+            require(_contractTransferCallback(msg.sender, to, amount, new bytes(0)), "You can't transfer to staking contract");
+        }
+        return true;
+    }
+
     function _beforeTokenTransfer(
         address from,
         address to,
@@ -78,9 +89,6 @@ contract CyberPopToken is
         uint256 amount
     ) internal override(ERC20, ERC20Votes) {
         super._afterTokenTransfer(from, to, amount);
-        if (to.isContract()) {
-            _contractTransferCallback(from, to, amount, new bytes(0));
-        }
     }
 
     function _mint(address to, uint256 amount)
