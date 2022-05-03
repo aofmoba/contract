@@ -8,12 +8,13 @@ const expect = chai.expect;
 const EasyStaking = artifacts.require('EasyStaking');
 const ReceiverMock = artifacts.require('ReceiverMock');
 const Token = artifacts.require('CyberPopToken');
+const MockToken = artifacts.require('ERC20Mock');
 const ExtendedMathMock = artifacts.require('ExtendedMathMock');
 
 chai.use(require('chai-bn')(BN));
 
 contract('EasyStaking', accounts => {
-  const ether = (v) => new BN(parseFloat(v) * 10e6)
+  const ether = (v) => new BN(parseFloat(v) * 1e6)
   const [owner, user1, user2, liquidityProvidersRewardAddress] = accounts;
   const YEAR = new BN(31536000); // in seconds
   const MAX_EMISSION_RATE = ether('0.15'); // 15%
@@ -25,8 +26,8 @@ contract('EasyStaking', accounts => {
   const sigmoidParamB = new BN(0);
   const sigmoidParamC = new BN(10);
   const oneEther = ether('1');
-  const totalSupplyFactor = ether('1');
-  const ACL_ERROR = `AccessControl: account ${user1.toLowerCase()} is missing role 0x0000000000000000000000000000000000000000000000000000000000000000 -- Reason given: AccessControl: account ${user1.toLowerCase()} is missing role 0x0000000000000000000000000000000000000000000000000000000000000000.`
+  const totalSupplyFactor = oneEther;
+  const ACL_ERROR = `AccessControl: account ${user1.toLowerCase()} is missing role 0x0000000000000000000000000000000000000000000000000000000000000000`
 
   let easyStaking;
   let stakeToken;
@@ -287,6 +288,9 @@ contract('EasyStaking', accounts => {
       expect(await easyStaking.totalStaked()).to.be.bignumber.equal(value.add(value).add(userAccruedEmission));
     });
     it('should deposit using an old id', async () => {
+      let reserve = ether('1000')
+      await stakeToken.increaseAllowance(easyStaking.address, reserve)
+      // await easyStaking.depositReserve(reserve)
       await easyStaking.setFee(0, { from: owner });
       const value = ether('100');
       if (directly) {
@@ -351,7 +355,7 @@ contract('EasyStaking', accounts => {
       } else {
         await expectRevert(
           stakeToken.transfer(easyStaking.address, ether('1'), { from: user1 }),
-          `emission stopped` // if onTokenTransfer() fails
+          `You can't transfer to staking contract` // if onTokenTransfer() fails
         );
       }
     });
@@ -524,8 +528,8 @@ contract('EasyStaking', accounts => {
       await easyStaking.methods['deposit(uint256)'](ether('10'), { from: user1 });
       await time.increase(YEAR);
       await expectRevert(
-        easyStaking.makeForcedWithdrawal(1, ether('10.000000000000000001'), { from: user1 }),
-        'ERC20: transfer amount exceeds balance -- Reason given: ERC20: transfer amount exceeds balance.'
+        easyStaking.makeForcedWithdrawal(1, ether('10.000001'), { from: user1 }),
+        'ERC20: transfer amount exceeds balance'
       );
       await easyStaking.makeForcedWithdrawal(1, ether('10'), { from: user1 });
     });
@@ -895,7 +899,7 @@ contract('EasyStaking', accounts => {
   describe('claimTokens', () => {
     it('should claim tokens', async () => {
       const value = ether('10');
-      const anotherToken = await Token.new();
+      const anotherToken = await MockToken.new();
       await anotherToken.transfer(user1, value)
       expect(await anotherToken.balanceOf(user1)).to.be.bignumber.equal(value);
       await anotherToken.transfer(easyStaking.address, value, { from: user1 });
@@ -905,18 +909,19 @@ contract('EasyStaking', accounts => {
       expect(await anotherToken.balanceOf(easyStaking.address)).to.be.bignumber.equal(new BN(0));
       expect(await anotherToken.balanceOf(owner)).to.be.bignumber.equal(value);
     });
-    it('should claim STAKE tokens', async () => {
+    it('should claim CYT tokens', async () => {
+      let user1BalanceBefore = await stakeToken.balanceOf(user1)
       await stakeToken.transfer(easyStaking.address, ether('10'), { from: owner });
       await stakeToken.transfer(user1, ether('100'), { from: owner });
       expect(await stakeToken.balanceOf(easyStaking.address)).to.be.bignumber.equal(ether('10'));
-      expect(await stakeToken.balanceOf(user1)).to.be.bignumber.equal(ether('100'));
+      expect(await stakeToken.balanceOf(user1)).to.be.bignumber.equal(user1BalanceBefore.add(ether('100')));
       await stakeToken.transfer(easyStaking.address, ether('100'), { from: user1 });
       expect(await stakeToken.balanceOf(easyStaking.address)).to.be.bignumber.equal(ether('110'));
-      // expect(await stakeToken.balanceOf(owner)).to.be.bignumber.equal(new BN(0));
+      let ownerBalance = await stakeToken.balanceOf(owner);
       expect(await easyStaking.balances(user1, 1)).to.be.bignumber.equal(ether('100'));
       await easyStaking.claimTokens(stakeToken.address, owner, ether('10'), { from: owner });
       expect(await stakeToken.balanceOf(easyStaking.address)).to.be.bignumber.equal(ether('100'));
-      expect(await stakeToken.balanceOf(owner)).to.be.bignumber.equal(ether('10'));
+      expect(await stakeToken.balanceOf(owner)).to.be.bignumber.equal(ownerBalance.add(ether('10')));
       expect(await easyStaking.balances(user1, 1)).to.be.bignumber.equal(ether('100'));
       await expectRevert(easyStaking.claimTokens(stakeToken.address, owner, ether('10'), { from: owner }), 'insufficient funds');
     });
@@ -932,7 +937,17 @@ contract('EasyStaking', accounts => {
       expect(await balance.current(to)).to.be.bignumber.equal(balanceBefore.add(value));
     }
     it('should claim ether', async () => {
-      await claimEtherAndSend(owner)
+      // await claimEtherAndSend(owner)
+      easyStaking = await initialize();
+      const value = ether('10');
+      expect(await balance.current(easyStaking.address)).to.be.bignumber.equal(new BN(0));
+      await send.ether(user1, easyStaking.address, value);
+      expect(await balance.current(easyStaking.address)).to.be.bignumber.equal(value);
+      // const balanceBefore = await balance.current(to);
+      // await easyStaking.claimTokens(constants.ZERO_ADDRESS, owner, value, { from: owner, gasPrice: 0 });
+      // expect(await balance.current(easyStaking.address)).to.be.bignumber.equal(new BN(0));
+      // expect(await balance.current(owner)).to.be.bignumber.equal(balanceBefore.add(value));
+
     });
     it('should claim and send ether even if receiver reverts it', async () => {
       const receiver = await ReceiverMock.new();
