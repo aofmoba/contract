@@ -190,12 +190,14 @@ contract EasyStaking is AccessControl, ReentrancyGuard {
         require(_owner != address(0), "zero address");
         require(_tokenAddress.isContract(), "not a contract address");
         token = CyberPopToken(_tokenAddress);
+        require(_fee <= 10 ** token.decimals(), "should be less than or equal to 1");
         _updateUintParam(feeParam, _fee);
         _updateUintParam(withdrawalLockDurationParam, _withdrawalLockDuration);
         _updateUintParam(
             withdrawalUnlockDurationParam,
             _withdrawalUnlockDuration
         );
+        require(_totalSupplyFactor <= 10 ** token.decimals(), "should be less than or equal to 1");
         _updateUintParam(totalSupplyFactorParam, _totalSupplyFactor);
         sigmoid.setParameters(_sigmoidParamA, _sigmoidParamB, _sigmoidParamC);
         _setLiquidityProvidersRewardAddress(_liquidityProvidersRewardAddress);
@@ -230,13 +232,16 @@ contract EasyStaking is AccessControl, ReentrancyGuard {
             _depositId > 0 && _depositId <= lastDepositIds[msg.sender],
             "wrong deposit id"
         );
+        token.transferFrom(msg.sender, address(this), _amount);
         _deposit(msg.sender, _depositId, _amount);
-        _setLocked(true);
-        require(
-            token.transferFrom(msg.sender, address(this), _amount),
-            "transfer failed"
-        );
-        _setLocked(false);
+    }
+
+
+    /**
+     * @notice Transfer reserved token for staking rewards, as CYT is capped and preminted
+     */
+    function depositReserve(uint256 _amount) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        token.transferFrom(msg.sender, address(this), _amount);
     }
 
     /**
@@ -253,9 +258,7 @@ contract EasyStaking is AccessControl, ReentrancyGuard {
         bytes calldata
     ) external returns (bool) {
         require(msg.sender == address(token), "only token contract is allowed");
-        if (!locked) {
-            _deposit(_sender, ++lastDepositIds[_sender], _amount);
-        }
+        _deposit(_sender, ++lastDepositIds[_sender], _amount);
         return true;
     }
 
