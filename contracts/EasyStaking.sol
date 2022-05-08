@@ -514,7 +514,7 @@ contract EasyStaking is AccessControl, ReentrancyGuard {
         uint256 totalSupply = token.totalSupply();
         uint256 factor = totalSupplyFactor();
         if (factor == 0) return 0;
-        uint256 target = totalSupply.mul(factor).div(token.decimals());
+        uint256 target = totalSupply.mul(factor).div(1e6);
         uint256 maxSupplyBasedEmissionRate = MAX_EMISSION_RATE.div(2); // 7.5%
         if (totalStaked >= target) {
             return maxSupplyBasedEmissionRate;
@@ -668,12 +668,9 @@ contract EasyStaking is AccessControl, ReentrancyGuard {
             // require(token.mint(address(this), total), "minting failed");
             balances[_user][_id] = currentBalance.add(userShare);
             totalStaked = totalStaked.add(userShare);
-            require(
-                token.transfer(
-                    liquidityProvidersRewardAddress(),
-                    total.sub(userShare)
-                ),
-                "transfer failed"
+            token.transfer(
+                liquidityProvidersRewardAddress(),
+                total.sub(userShare)
             );
         }
         return (userShare, timePassed);
