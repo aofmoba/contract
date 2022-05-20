@@ -98,6 +98,12 @@ module.exports = {
       skipDryRun: true,
       production: false
     },
+    bsct: {
+      provider: () => new HDWalletProvider(mnemonic, `https://data-seed-prebsc-2-s3.binance.org:8545/`),
+      network_id: 97,
+      skipDryRun: true,
+      production: false
+    },
     fuji: {
       provider: () => new HDWalletProvider(mnemonic, `https://api.avax-test.network/ext/bc/C/rpc`),
       network_id: "43113",   // This network is yours, in the cloud.
