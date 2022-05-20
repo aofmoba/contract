@@ -29,11 +29,13 @@ contract("TimeLock", function (accounts) {
     let due = Math.floor(Date.now() / 1000) + lockPeriod
     // lock up 10 CYT
     let amount = 10_000_000
+    await cyt.increaseAllowance(timelock.address, amount)
     await timelock.lock(userA, amount, lockPeriod, batches)
 
     let balance = await cyt.balanceOf(timelock.address)
     assert.equal(balance.toNumber(), amount)
 
+    await cyt.increaseAllowance(timelock.address, amount)
     await timelock.lock(userB, amount, lockPeriod, batches)
     let totalLocked = await timelock.totalLocked()
 
@@ -64,6 +66,7 @@ contract("TimeLock", function (accounts) {
 
     // lock up 10 CYT
     let amount = 10_000_000
+    await cyt.increaseAllowance(timelock.address, amount)
     await timelock.lock(userA, amount, lockPeriod, batches)
 
     await expectRevert(timelock.withdraw({ from: userA }), "CYT Locker: lock duration not passed")
