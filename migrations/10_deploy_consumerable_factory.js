@@ -14,5 +14,7 @@ module.exports = async (deployer, network, accounts) => {
   await badge.grantRole(minter, consumerableFactory.address)
 
   const lootbox = await LootBox.deployed()
-  setupConsumerableFactory(lootbox, consumerableFactory)
+  if (network != 'mainnet') {
+    setupConsumerableFactory(lootbox, consumerableFactory)
+  }
 };

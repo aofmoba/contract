@@ -14,5 +14,5 @@ module.exports = async (deployer, network, accounts) => {
     const charFactory = await CharacterFactory.deployed()
     const cyberClubFactory = await CyberClubFactory.deployed()
 
-    await setupLootBox(lootbox, cyberClubFactory, charFactory);
+    await setupLootBox(lootbox, cyberClubFactory, charFactory)
 };

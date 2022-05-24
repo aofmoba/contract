@@ -7,7 +7,8 @@ module.exports = async (deployer, network, accounts) => {
     const characterFactory = await CharacterFactory.deployed()
     const consumerableFactory = await ConsumerableFactory.deployed()
 
-    await deployer.deploy(FixLvlCharFactory, consumerableFactory.address, characterFactory.address)
+    const numOptions = 3
+    await deployer.deploy(FixLvlCharFactory, consumerableFactory.address, characterFactory.address, numOptions)
     const fixLvlCharFactory = await FixLvlCharFactory.deployed()
 
     let minter = await characterFactory.MINTER_ROLE()
@@ -17,8 +18,14 @@ module.exports = async (deployer, network, accounts) => {
     await consumerableFactory.grantRole(minter, fixLvlCharFactory.address)
 
     const lootbox = await LootBox.deployed()
+    let optionId = await lootbox.numOptions()
     await lootbox.addNewOption(fixLvlCharFactory.address, [9000, 1000])
+    console.log('Fixed level [9000, 1000] option ID:', optionId++)
+
     await lootbox.addNewOption(fixLvlCharFactory.address, [5000, 5000])
+    console.log('Fixed level [5000, 5000] option ID:', optionId++)
+    await lootbox.addNewOption(fixLvlCharFactory.address, [0, 800, 9000, 200])
+    console.log('Fixed level [800, 9000, 200] option ID:', optionId++)
 
     minter = await fixLvlCharFactory.MINTER_ROLE()
     await fixLvlCharFactory.grantRole(minter, lootbox.address)

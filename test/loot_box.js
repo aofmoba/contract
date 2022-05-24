@@ -107,16 +107,28 @@ contract("LootBox", function ([owner, userA, userB]) {
       assert.equal(optionId, 2)
     })
 
-    it("mints level 1 character", async () => {
+    it("mints fixed level character", async () => {
       await lootbox.mint(userB, boxId, 1, '0x')
       await lootbox.setFactoryForOption(boxId, fixLvlCharFactory.address)
       await lootbox.setProbabilitiesForOption(boxId, [0, 10000])
       let tx = await lootbox.unpack(boxId, 1, {from: userB})
-      const blockNumber = tx.receipt.blockNumber
-      const events = await cyborg.getPastEvents("Transfer", {fromBlock: blockNumber, toBlock: blockNumber})
+      let blockNumber = tx.receipt.blockNumber
+      let events = await cyborg.getPastEvents("Transfer", {fromBlock: blockNumber, toBlock: blockNumber})
 
       let tokenId = events[0].args.tokenId.toNumber()
       assert.isTrue(tokenId.toString().startsWith("1"))
+
+      await lootbox.mint(userB, boxId, 1, '0x')
+
+ 
+      await fixLvlCharFactory.setNumOptions(3)
+      await lootbox.setProbabilitiesForOption(boxId, [0, 0, 10000]) // optionId 2
+      tx = await lootbox.unpack(boxId, 1, {from: userB})
+      blockNumber = tx.receipt.blockNumber
+      events = await cyborg.getPastEvents("Transfer", {fromBlock: blockNumber, toBlock: blockNumber})
+
+      tokenId = events[0].args.tokenId.toNumber()
+      assert.isTrue(tokenId.toString().startsWith("2"))
     })
   })
 })
