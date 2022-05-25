@@ -55,16 +55,6 @@ contract CyberPopToken is
         return success;
     }
 
-    function mint(address to, uint256 amount)
-        public
-        onlyRole(DEFAULT_ADMIN_ROLE)
-        whenNotPaused
-        returns (bool)
-    {
-        _mint(to, amount);
-        return true;
-    }
-
     function transfer(
         address to,
         uint256 amount
