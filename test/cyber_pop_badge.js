@@ -1,5 +1,4 @@
 const CyberpopGame = artifacts.require("CyberpopGame");
-const { deployProxy } = require('@openzeppelin/truffle-upgrades');
 const { expectRevert } = require("@openzeppelin/test-helpers");
 
 /*
@@ -11,7 +10,7 @@ contract("CyberpopGame", function (accounts) {
   let badge;
   let minterRole;
   before(async () => {
-    badge = await deployProxy(CyberpopGame)
+    badge = await CyberpopGame.ddeployed()
     minterRole = await badge.MINTER_ROLE()
   })
 

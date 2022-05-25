@@ -1,48 +1,28 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.2;
 
-import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
+import "@openzeppelin/contracts/access/AccessControl.sol";
+import "@openzeppelin/contracts/utils/Counters.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 
-contract Cyborg is
-    Initializable,
-    ERC721Upgradeable,
-    ERC721EnumerableUpgradeable,
-    AccessControlUpgradeable,
-    UUPSUpgradeable
-{
-    using CountersUpgradeable for CountersUpgradeable.Counter;
+contract Cyborg is ERC721, ERC721Enumerable, AccessControl {
+    using Counters for Counters.Counter;
 
-    CountersUpgradeable.Counter private _tokenIdCounter;
+    Counters.Counter private _tokenIdCounter;
     string private _uriPrefix;
     address private _owner;
 
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     bytes32 public constant BURNER_ROLE = keccak256("BURNER_ROLE");
 
-    /// @custom:oz-upgrades-unsafe-allow constructor
-    constructor() initializer {}
-
-    function __Cyborg_init() private {
+    constructor() ERC721("Cyborg", "CYBER") {
         _uriPrefix = "https://api.cyberpop.online/role/";
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
         _setupRole(MINTER_ROLE, _msgSender());
         _setupRole(BURNER_ROLE, _msgSender());
         _owner = _msgSender();
-    }
-
-    function initialize() public initializer {
-        __ERC721_init("Cyborg", "CYBER");
-        __ERC721Enumerable_init();
-        __AccessControl_init();
-        __UUPSUpgradeable_init();
-
-        __Cyborg_init();
     }
 
     function owner() public view returns (address) {
@@ -87,13 +67,7 @@ contract Cyborg is
         override
         returns (string memory)
     {
-        return
-            string(
-                abi.encodePacked(
-                    _uriPrefix,
-                    StringsUpgradeable.toString(_tokenId)
-                )
-            );
+        return string(abi.encodePacked(_uriPrefix, Strings.toString(_tokenId)));
     }
 
     /**
@@ -141,30 +115,20 @@ contract Cyborg is
         _burn(tokenId);
     }
 
-    function _authorizeUpgrade(address newImplementation)
-        internal
-        override
-        onlyOwner
-    {}
-
     // The following functions are overrides required by Solidity.
 
     function _beforeTokenTransfer(
         address from,
         address to,
         uint256 tokenId
-    ) internal override(ERC721Upgradeable, ERC721EnumerableUpgradeable) {
+    ) internal override(ERC721, ERC721Enumerable) {
         super._beforeTokenTransfer(from, to, tokenId);
     }
 
     function supportsInterface(bytes4 interfaceId)
         public
         view
-        override(
-            ERC721Upgradeable,
-            ERC721EnumerableUpgradeable,
-            AccessControlUpgradeable
-        )
+        override(ERC721, ERC721Enumerable, AccessControl)
         returns (bool)
     {
         return super.supportsInterface(interfaceId);

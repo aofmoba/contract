@@ -1,4 +1,4 @@
-const CyberpopBadget = artifacts.require('CyberpopBadget');
+const CyberpopBadge = artifacts.require('CyberpopBadge');
 
 // your address
 const {ADDR, TOKEN_ID} = process.env;
@@ -6,7 +6,7 @@ const {ADDR, TOKEN_ID} = process.env;
 const amount = 50;
 
 module.exports = async(callback) => {
-  let badge = await CyberpopBadget.deployed();
+  let badge = await CyberpopBadge.deployed();
   console.log("Minting...");
   await badge.mint(ADDR, TOKEN_ID, amount, '0x0');
   callback()

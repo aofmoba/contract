@@ -55,13 +55,18 @@ contract CyberPopToken is
         return success;
     }
 
-    function transfer(
-        address to,
-        uint256 amount
-    ) public virtual override returns (bool) {
+    function transfer(address to, uint256 amount)
+        public
+        virtual
+        override
+        returns (bool)
+    {
         super.transfer(to, amount);
         if (to.isContract()) {
-            require(_contractTransferCallback(msg.sender, to, amount, new bytes(0)), "You can't transfer to staking contract");
+            require(
+                _contractTransferCallback(msg.sender, to, amount, new bytes(0)),
+                "You can't transfer to staking contract"
+            );
         }
         return true;
     }
@@ -88,7 +93,6 @@ contract CyberPopToken is
         internal
         override(ERC20, ERC20Votes)
     {
-        require(totalSupply() <= CAP, "CYT: capped");
         super._mint(to, amount);
     }
 

@@ -1,12 +1,11 @@
 const Cyborg = artifacts.require("Cyborg");
-const { deployProxy } = require('@openzeppelin/truffle-upgrades');
 const { expectRevert } = require("@openzeppelin/test-helpers");
 
 contract("Cyborg", function (accounts) {
   let cyborg;
   let minterRole;
   beforeEach(async () => {
-    cyborg = await deployProxy(Cyborg)
+    cyborg = await Cyborg.deployed()
     minterRole = await cyborg.MINTER_ROLE()
   })
 
