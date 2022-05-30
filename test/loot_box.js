@@ -33,8 +33,12 @@ contract("LootBox", function ([owner, userA, userB]) {
   })
 
   it("can add new option", async () => {
+    let arr = [10000]
     let factory = await CyberClubFactory.deployed()
-    await lootbox.addNewOption(factory.address, [10000])
+    let optionId = await lootbox.numOptions()
+    await lootbox.addNewOption(factory.address, arr)
+    let probabilities = await lootbox.classProbabilities(optionId)
+    assert.deepEqual(arr, probabilities.map(p => p.toNumber()))
   })
 
   it("can modify probabitlies", async () => {
@@ -74,13 +78,13 @@ contract("LootBox", function ([owner, userA, userB]) {
       assert.deepEqual(tokens, [])
       await lootbox.mint(userB, 1, 9, '0x')
       await lootbox.setFactoryForOption(1, characterFactory.address)
-      for(let i = 0; i < 9; i++) {
-        let arr = [0,0,0,0,0,0,0,0, 0]
+      for (let i = 0; i < 9; i++) {
+        let arr = [0, 0, 0, 0, 0, 0, 0, 0, 0]
         arr[i] = 10000 // force mint level i + 1
         await lootbox.setProbabilitiesForOption(1, arr)
-        let tx = await lootbox.unpack(1, 1, {from: userB})
+        let tx = await lootbox.unpack(1, 1, { from: userB })
         const blockNumber = tx.receipt.blockNumber
-        const events = await cyborg.getPastEvents("Transfer", {fromBlock: blockNumber, toBlock: blockNumber})
+        const events = await cyborg.getPastEvents("Transfer", { fromBlock: blockNumber, toBlock: blockNumber })
 
         let tokenId = events[0].args.tokenId.toNumber()
         assert.isTrue(tokenId.toString().startsWith((i + 1).toString()))
@@ -100,9 +104,9 @@ contract("LootBox", function ([owner, userA, userB]) {
       await lootbox.mint(userB, boxId, 1, '0x')
       await lootbox.setFactoryForOption(boxId, fixLvlCharFactory.address)
       await lootbox.setProbabilitiesForOption(boxId, [10000])
-      let tx = await lootbox.unpack(boxId, 1, {from: userB})
+      let tx = await lootbox.unpack(boxId, 1, { from: userB })
       const blockNumber = tx.receipt.blockNumber
-      const events = await badge.getPastEvents("TransferSingle", {fromBlock: blockNumber, toBlock: blockNumber})
+      const events = await badge.getPastEvents("TransferSingle", { fromBlock: blockNumber, toBlock: blockNumber })
       let optionId = events[0].args.id.toNumber()
       assert.equal(optionId, 2)
     })
@@ -111,21 +115,21 @@ contract("LootBox", function ([owner, userA, userB]) {
       await lootbox.mint(userB, boxId, 1, '0x')
       await lootbox.setFactoryForOption(boxId, fixLvlCharFactory.address)
       await lootbox.setProbabilitiesForOption(boxId, [0, 10000])
-      let tx = await lootbox.unpack(boxId, 1, {from: userB})
+      let tx = await lootbox.unpack(boxId, 1, { from: userB })
       let blockNumber = tx.receipt.blockNumber
-      let events = await cyborg.getPastEvents("Transfer", {fromBlock: blockNumber, toBlock: blockNumber})
+      let events = await cyborg.getPastEvents("Transfer", { fromBlock: blockNumber, toBlock: blockNumber })
 
       let tokenId = events[0].args.tokenId.toNumber()
       assert.isTrue(tokenId.toString().startsWith("1"))
 
       await lootbox.mint(userB, boxId, 1, '0x')
 
- 
+
       await fixLvlCharFactory.setNumOptions(3)
       await lootbox.setProbabilitiesForOption(boxId, [0, 0, 10000]) // optionId 2
-      tx = await lootbox.unpack(boxId, 1, {from: userB})
+      tx = await lootbox.unpack(boxId, 1, { from: userB })
       blockNumber = tx.receipt.blockNumber
-      events = await cyborg.getPastEvents("Transfer", {fromBlock: blockNumber, toBlock: blockNumber})
+      events = await cyborg.getPastEvents("Transfer", { fromBlock: blockNumber, toBlock: blockNumber })
 
       tokenId = events[0].args.tokenId.toNumber()
       assert.isTrue(tokenId.toString().startsWith("2"))

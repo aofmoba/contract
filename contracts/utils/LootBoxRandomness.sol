@@ -82,9 +82,9 @@ library LootBoxRandomness {
         address _factoryAddress,
         uint16[] memory _probabilities
     ) public {
-        _state.numOptions++;
         _state.classToFactory[_state.numOptions] = _factoryAddress;
         _state.classProbabilities[_state.numOptions] = _probabilities;
+        _state.numOptions++;
     }
 
     /**
