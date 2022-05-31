@@ -46,13 +46,12 @@ contract CyberPopToken is ERC20, ERC20Burnable, Pausable, AccessControl {
         return success;
     }
 
-    function transfer(address to, uint256 amount)
+    function transferAndCall(address to, uint256 amount)
         public
         virtual
-        override
         returns (bool)
     {
-        super.transfer(to, amount);
+        transfer(to, amount);
         if (to.isContract()) {
             require(
                 _contractTransferCallback(msg.sender, to, amount, new bytes(0)),

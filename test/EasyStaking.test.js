@@ -251,7 +251,7 @@ contract('EasyStaking', accounts => {
           prevDepositDuration: new BN(0),
         });
       } else {
-        receipt = await stakeToken.transfer(easyStaking.address, value, { from: user1 });
+        receipt = await stakeToken.transferAndCall(easyStaking.address, value, { from: user1 });
       }
       const timestamp = await getBlockTimestamp(receipt);
       expect(await easyStaking.balances(user1, 1)).to.be.bignumber.equal(value);
@@ -263,7 +263,7 @@ contract('EasyStaking', accounts => {
       if (directly) {
         receipt = await easyStaking.methods['deposit(uint256)'](value, { from: user1 });
       } else {
-        receipt = await stakeToken.transfer(easyStaking.address, value, { from: user1 });
+        receipt = await stakeToken.transferAndCall(easyStaking.address, value, { from: user1 });
       }
       const timestampBefore = await getBlockTimestamp(receipt);
       await time.increase(YEAR.div(new BN(8)));
@@ -297,8 +297,8 @@ contract('EasyStaking', accounts => {
         await easyStaking.methods['deposit(uint256)'](value, { from: user1 });
         await easyStaking.methods['deposit(uint256)'](value, { from: user1 });
       } else {
-        await stakeToken.transfer(easyStaking.address, value, { from: user1 });
-        await stakeToken.transfer(easyStaking.address, value, { from: user1 });
+        await stakeToken.transferAndCall(easyStaking.address, value, { from: user1 });
+        await stakeToken.transferAndCall(easyStaking.address, value, { from: user1 });
       }
       await time.increase(YEAR);
       await easyStaking.makeForcedWithdrawal(1, 0, { from: user1 });
@@ -338,7 +338,7 @@ contract('EasyStaking', accounts => {
         );
       } else {
         await expectRevert(
-          stakeToken.transfer(easyStaking.address, 0, { from: user1 }),
+          stakeToken.transferAndCall(easyStaking.address, 0, { from: user1 }),
           `You can't transfer to staking contract` // if onTokenTransfer() fails
         );
       }
@@ -354,7 +354,7 @@ contract('EasyStaking', accounts => {
         );
       } else {
         await expectRevert(
-          stakeToken.transfer(easyStaking.address, ether('1'), { from: user1 }),
+          stakeToken.transferAndCall(easyStaking.address, ether('1'), { from: user1 }),
           `You can't transfer to staking contract` // if onTokenTransfer() fails
         );
       }
@@ -660,7 +660,7 @@ contract('EasyStaking', accounts => {
     it('should request', async () => {
       const value = ether('1000');
       await stakeToken.transfer(user1, value, { from: owner });
-      await stakeToken.transfer(easyStaking.address, value, { from: user1 });
+      await stakeToken.transferAndCall(easyStaking.address, value, { from: user1 });
       const receipt = await easyStaking.requestWithdrawal(1, { from: user1 });
       const timestamp = await getBlockTimestamp(receipt);
       expect(await easyStaking.withdrawalRequestsDates(user1, 1)).to.be.bignumber.equal(timestamp);
@@ -733,11 +733,11 @@ contract('EasyStaking', accounts => {
       await stakeToken.transfer(owner, value, { from: owner });
       await stakeToken.transfer(user1, value, { from: owner });
       await stakeToken.transfer(user2, value, { from: owner });
-      await stakeToken.transfer(easyStaking.address, ether('10'), { from: owner });
+      await stakeToken.transferAndCall(easyStaking.address, ether('10'), { from: owner });
       expectedTotalStaked = expectedTotalStaked.add(ether('10'));
       expect(await easyStaking.totalStaked()).to.be.bignumber.equal(expectedTotalStaked);
       await time.increase(1);
-      let receipt = await stakeToken.transfer(easyStaking.address, ether('500'), { from: user1 });
+      let receipt = await stakeToken.transferAndCall(easyStaking.address, ether('500'), { from: user1 });
       const timestampBefore = await getBlockTimestamp(receipt);
       expectedTotalStaked = expectedTotalStaked.add(ether('500'));
       expect(await easyStaking.totalStaked()).to.be.bignumber.equal(expectedTotalStaked);
@@ -746,11 +746,11 @@ contract('EasyStaking', accounts => {
       expectedTotalStaked = expectedTotalStaked.sub(ether('250'));
       expect(await easyStaking.totalStaked()).to.be.bignumber.equal(expectedTotalStaked);
       await time.increase(1);
-      await stakeToken.transfer(easyStaking.address, ether('1000'), { from: user2 });
+      await stakeToken.transferAndCall(easyStaking.address, ether('1000'), { from: user2 });
       expectedTotalStaked = expectedTotalStaked.add(ether('1000'));
       expect(await easyStaking.totalStaked()).to.be.bignumber.equal(expectedTotalStaked);
       await time.increase(1);
-      await stakeToken.transfer(easyStaking.address, ether('40'), { from: user1 });
+      await stakeToken.transferAndCall(easyStaking.address, ether('40'), { from: user1 });
       expectedTotalStaked = expectedTotalStaked.add(ether('40'));
       expect(await easyStaking.totalStaked()).to.be.bignumber.equal(expectedTotalStaked);
       await time.increase(1);
@@ -960,7 +960,7 @@ contract('EasyStaking', accounts => {
       await stakeToken.transfer(user1, ether('100'), { from: owner });
       expect(await stakeToken.balanceOf(easyStaking.address)).to.be.bignumber.equal(ether('10'));
       expect(await stakeToken.balanceOf(user1)).to.be.bignumber.equal(user1BalanceBefore.add(ether('100')));
-      await stakeToken.transfer(easyStaking.address, ether('100'), { from: user1 });
+      await stakeToken.transferAndCall(easyStaking.address, ether('100'), { from: user1 });
       expect(await stakeToken.balanceOf(easyStaking.address)).to.be.bignumber.equal(ether('110'));
       let ownerBalance = await stakeToken.balanceOf(owner);
       expect(await easyStaking.balances(user1, 1)).to.be.bignumber.equal(ether('100'));
@@ -1042,12 +1042,12 @@ contract('EasyStaking', accounts => {
     it(`can't be more than 7.5%`, async () => {
       const maxSupplyBasedEmissionRate = MAX_EMISSION_RATE.div(new BN(2));
       const totalSupply = await stakeToken.totalSupply()
-      await stakeToken.transfer(easyStaking.address, totalSupply.div(new BN(2)), { from: owner });
+      await stakeToken.transferAndCall(easyStaking.address, totalSupply.div(new BN(2)), { from: owner });
       expect(await easyStaking.getSupplyBasedEmissionRate()).to.be.bignumber.equal(maxSupplyBasedEmissionRate.div(new BN(2)));
       await easyStaking.setTotalSupplyFactor(ether('0.5'));
       await time.increase(PARAM_UPDATE_DELAY.add(new BN(1)));
       expect(await easyStaking.getSupplyBasedEmissionRate()).to.be.bignumber.equal(maxSupplyBasedEmissionRate);
-      await stakeToken.transfer(easyStaking.address, totalSupply.div(new BN(3)), { from: owner }); // less than half left
+      await stakeToken.transferAndCall(easyStaking.address, totalSupply.div(new BN(3)), { from: owner }); // less than half left
       expect(await easyStaking.getSupplyBasedEmissionRate()).to.be.bignumber.equal(maxSupplyBasedEmissionRate);
     });
   });

@@ -166,7 +166,7 @@ contract EasyStaking is AccessControl, ReentrancyGuard {
     /**
      * @dev Initializes the contract.
      * @param _owner The owner of the contract.
-     * @param _tokenAddress The address of the STAKE token contract.
+     * @param _tokenAddress The address of the CYT token contract.
      * @param _liquidityProvidersRewardAddress The address for the Liquidity Providers reward.
      * @param _fee The fee of the forced withdrawal (in percentage).
      * @param _withdrawalLockDuration The time from the request after which the withdrawal will be available (in seconds).
@@ -234,7 +234,7 @@ contract EasyStaking is AccessControl, ReentrancyGuard {
      * It calls the internal "_deposit" method and transfers tokens from sender to contract.
      * Sender must approve tokens first.
      *
-     * Instead this, user can use the simple "transfer" method of STAKE token contract to make a deposit.
+     * Instead this, user can use the simple "transferAndCall" method of CYT token contract to make a deposit.
      * Sender's approval is not needed in this case.
      *
      * Note: each call updates the deposit date so be careful if you want to make a long staking.
@@ -262,8 +262,8 @@ contract EasyStaking is AccessControl, ReentrancyGuard {
     }
 
     /**
-     * @dev This method is called when STAKE tokens are transferred to this contract.
-     * using "transfer", "transferFrom", or "transferAndCall" method of STAKE token contract.
+     * @dev This method is called when CYT tokens are transferred to this contract.
+     * using "transferAndCall" method of CYT token contract.
      * It generates a new deposit ID and calls the internal "_deposit" method.
      * @param _sender The sender of tokens.
      * @param _amount The transferred amount.
