@@ -29,7 +29,7 @@ contract LootBox is
     }
 
     function name() public pure returns (string memory) {
-        return "CyberPop Loot Box";
+        return "Cyberpop Loot Box";
     }
 
     function symbol() public pure returns (string memory) {
