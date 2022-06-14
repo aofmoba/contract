@@ -8,13 +8,13 @@ import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 
 import "@openzeppelin/contracts/utils/Address.sol";
 
-contract CyberPopToken is ERC20, ERC20Burnable, Pausable, AccessControl {
+contract CyberpopToken is ERC20, ERC20Burnable, Pausable, AccessControl {
     using Address for address;
 
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     uint256 public CAP = 120 * 1e9 * 10**decimals();
 
-    constructor() ERC20("CyberPopToken", "CYT") {
+    constructor() ERC20("CyberpopToken", "CYT") {
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _setupRole(MINTER_ROLE, msg.sender);
 

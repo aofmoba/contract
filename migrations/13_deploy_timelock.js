@@ -1,6 +1,6 @@
 const TimeLock = artifacts.require('TimeLock');
-const CyberPopToken = artifacts.require('CyberPopToken');
+const CyberpopToken = artifacts.require('CyberpopToken');
 
 module.exports = async function (deployer) {
-    await deployer.deploy(TimeLock, CyberPopToken.address);
+    await deployer.deploy(TimeLock, CyberpopToken.address);
 };

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
-import "./CyberPopToken.sol";
+import "./CyberpopToken.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
@@ -69,7 +69,7 @@ contract TimeLock is Ownable {
             lockedAmount == 0,
             "CYT Locker: cannot re-lock a locked address"
         );
-        CyberPopToken(token).transferFrom(msg.sender, address(this), _amount);
+        CyberpopToken(token).transferFrom(msg.sender, address(this), _amount);
         lockedBalances[_sender].lockedAmount = _amount;
         lockedBalances[_sender].releaseBatches = _batches;
         lockedBalances[_sender].lockTimestamp = block.timestamp.add(

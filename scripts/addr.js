@@ -1,7 +1,7 @@
-const CyberPopBadge = artifacts.require('CyberPopBadge');
+const CyberpopBadge = artifacts.require('CyberpopBadge');
 
 module.exports = function(callback) {
-  console.log("CyberPopBadge contract address:");
-  console.log(CyberPopBadge.address);
+  console.log("CyberpopBadge contract address:");
+  console.log(CyberpopBadge.address);
   callback()
 }

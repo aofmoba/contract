@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
-import "./CyberPopToken.sol";
+import "./CyberpopToken.sol";
 import "./utils/Sacrifice.sol";
 import "./utils/Sigmoid.sol";
 
@@ -21,7 +21,7 @@ import "./utils/Sigmoid.sol";
 contract EasyStaking is AccessControl, ReentrancyGuard {
     using Address for address;
     using SafeMath for uint256;
-    using SafeERC20 for CyberPopToken;
+    using SafeERC20 for CyberpopToken;
     using SafeERC20 for IERC20;
     using Sigmoid for Sigmoid.State;
 
@@ -121,7 +121,7 @@ contract EasyStaking is AccessControl, ReentrancyGuard {
     uint256 public constant PARAM_UPDATE_DELAY = 7 days;
 
     // CYT token
-    CyberPopToken public token;
+    CyberpopToken public token;
 
     struct UintParam {
         uint256 oldValue;
@@ -190,7 +190,7 @@ contract EasyStaking is AccessControl, ReentrancyGuard {
     ) {
         require(_owner != address(0), "zero address");
         require(_tokenAddress.isContract(), "not a contract address");
-        token = CyberPopToken(_tokenAddress);
+        token = CyberpopToken(_tokenAddress);
         uint256 one = 10**token.decimals();
         require(_fee <= one, "should be less than or equal to 1");
         _updateUintParam(feeParam, _fee);

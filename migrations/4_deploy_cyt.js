@@ -1,5 +1,5 @@
-const CyberPopToken = artifacts.require('CyberPopToken');
+const CyberpopToken = artifacts.require('CyberpopToken');
 
 module.exports = async function (deployer, network) {
-    await deployer.deploy(CyberPopToken)
+    await deployer.deploy(CyberpopToken)
 };

@@ -7,7 +7,7 @@ const expect = chai.expect;
 
 const EasyStaking = artifacts.require('EasyStaking');
 const ReceiverMock = artifacts.require('ReceiverMock');
-const Token = artifacts.require('CyberPopToken');
+const Token = artifacts.require('CyberpopToken');
 const MockToken = artifacts.require('ERC20Mock');
 const ExtendedMathMock = artifacts.require('ExtendedMathMock');
 

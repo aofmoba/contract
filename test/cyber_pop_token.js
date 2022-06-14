@@ -1,10 +1,10 @@
 const { expectRevert } = require("@openzeppelin/test-helpers");
-const CyberPopToken = artifacts.require("CyberPopToken");
+const CyberpopToken = artifacts.require("CyberpopToken");
 
-contract("CyberPopToken", function ([owner, userA]) {
+contract("CyberpopToken", function ([owner, userA]) {
   let cyt
   beforeEach(async () => {
-    cyt = await CyberPopToken.deployed();
+    cyt = await CyberpopToken.deployed();
   })
 
   it("is capped", async () => {

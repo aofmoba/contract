@@ -1,5 +1,5 @@
 const TimeLock = artifacts.require("TimeLock")
-const CYT = artifacts.require("CyberPopToken")
+const CYT = artifacts.require("CyberpopToken")
 const { time, expectRevert, snapshot } = require("@openzeppelin/test-helpers");
 const { web3 } = require("@openzeppelin/test-helpers/src/setup");
 
