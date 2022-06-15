@@ -16,6 +16,10 @@ contract CyberpopVotes is AccessControl, ERC20Wrapper, ERC20Permit, ERC20Votes {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
+    function decimals() public view override returns (uint8) {
+        return ERC20(address(underlying)).decimals();
+    }
+
     function recover(address account)
         public
         onlyRole(DEFAULT_ADMIN_ROLE)
