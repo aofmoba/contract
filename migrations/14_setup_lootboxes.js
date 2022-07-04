@@ -7,59 +7,74 @@ const LootBox = artifacts.require("LootBox");
 const { grantMinter } = require("../lib/setupLootboxes");
 
 module.exports = async (deployer, network, accounts) => {
-    const lootbox = await LootBox.deployed()
-    const charFactory = await CharacterFactory.deployed()
-    const clubFactory = await CyberClubFactory.deployed()
-    const consumerableFactory = await ConsumerableFactory.deployed()
-    const fixLvlCharFactory = await FixLvlCharFactory.deployed()
+  const lootbox = await LootBox.deployed()
+  const charFactory = await CharacterFactory.deployed()
+  const clubFactory = await CyberClubFactory.deployed()
+  const consumerableFactory = await ConsumerableFactory.deployed()
+  const fixLvlCharFactory = await FixLvlCharFactory.deployed()
 
-    let minter = await lootbox.MINTER_ROLE()
-    await lootbox.grantRole(minter, clubFactory.address)
-    await clubFactory.setLootBox(lootbox.address)
+  let minter = await lootbox.MINTER_ROLE()
+  await lootbox.grantRole(minter, clubFactory.address)
+  await clubFactory.setLootBox(lootbox.address)
 
-    await grantMinter(lootbox, clubFactory)
-    await grantMinter(lootbox, charFactory)
+  await grantMinter(lootbox, clubFactory)
+  await grantMinter(lootbox, charFactory)
 
-    await lootbox.setState(
-      0,
-      1337
-    );
+  await lootbox.setState(
+    0,
+    1337
+  );
 
-    // ID 0-2
-    let optionId = await lootbox.numOptions()
-    await lootbox.addNewOption(clubFactory.address, [10000]);
-    console.log(`CyberClub [10000] option ID:`, optionId++)
-    await lootbox.addNewOption(clubFactory.address, [0,500,9500]);
-    console.log(`CyberClub [0,500,9500] option ID:`, optionId++)
-    await lootbox.addNewOption(charFactory.address, [300, 800, 2000, 3000, 2000, 1000, 500, 300, 100]);
-    console.log(`Random level Char [300, 800, 2000, 3000, 2000, 1000, 500, 300, 100] option ID:`, optionId++)
+  // ID 0-2
+  let optionId = await lootbox.numOptions()
+  await lootbox.addNewOption(clubFactory.address, [10000]);
+  console.log(`CyberClub [10000] option ID:`, optionId++)
+  await lootbox.addNewOption(clubFactory.address, [0, 500, 9500]);
+  console.log(`CyberClub [0,500,9500] option ID:`, optionId++)
+  await lootbox.addNewOption(charFactory.address, [300, 800, 2000, 3000, 2000, 1000, 500, 300, 100]);
+  console.log(`Random level Char [300, 800, 2000, 3000, 2000, 1000, 500, 300, 100] option ID:`, optionId++)
 
-    await grantMinter(lootbox, consumerableFactory)
+  await grantMinter(lootbox, consumerableFactory)
 
-    // ConsumerableFactory probabilities
-    let probabilities = [
-      [8000, 0, 2000],
-      [10000],
-      [9000, 1000],
-      [5000, 5000]
-    ]
+  // 消耗品机率
+  let consumerableProbabilities = [
+    [8000, 0, 2000],
+    [10000],
+    [9000, 1000],
+    [5000, 5000],
+  ]
 
-    // ID 3-6
-    for (let i = 0; i < probabilities.length; i++) {
-      await lootbox.addNewOption(consumerableFactory.address, probabilities[i]);
-      console.log(`consumerable ${probabilities[i]} option ID:`, optionId++)
-    }
+  // ID 3-6
+  for (let i = 0; i < consumerableProbabilities.length; i++) {
+    await lootbox.addNewOption(consumerableFactory.address, consumerableProbabilities[i]);
+    console.log(`consumerable ${consumerableProbabilities[i]} option ID:`, optionId++)
+  }
 
-    // FixLvlCharFactory probabilities
-    probabilities = [
-      [9000, 1000],
-      [5000, 5000],
-      [0, 800, 9000, 200]
-    ]
+  // FixLvlCharFactory probabilities
+  let probabilities = [
+    [9000, 1000],
+    [5000, 5000],
+    [0, 800, 9000, 200]
+  ]
 
-    // ID 7-9
-    for (let i = 0; i < probabilities.length; i++) {
-      await lootbox.addNewOption(fixLvlCharFactory.address, probabilities[i]);
-      console.log(`FixedLevel ${probabilities[i]} option ID:`, optionId++)
-    }
+  // ID 7-9
+  for (let i = 0; i < probabilities.length; i++) {
+    await lootbox.addNewOption(fixLvlCharFactory.address, probabilities[i]);
+    console.log(`FixedLevel ${probabilities[i]} option ID:`, optionId++)
+  }
+  // ID 10
+  await lootbox.addNewOption(charFactory.address, [800, 9000, 200]);
+  console.log(`Genesis hero [800, 9000, 200] option ID:`, optionId++)
+
+  // 支援卡机率 
+  probabilities = [
+    [0, 0, 0, 0, 3500, 3500, 1500, 1500],
+    [0, 0, 0, 0, 0, 0, 0, 0, 3500, 3500, 1500, 1500]
+  ]
+
+  // ID 11,12
+  for (let i = 0; i < probabilities.length; i++) {
+    await lootbox.addNewOption(consumerableFactory.address, probabilities[i]);
+    console.log(`support card ${probabilities[i]} option ID:`, optionId++)
+  }
 };
