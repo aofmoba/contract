@@ -5,16 +5,15 @@ import "../interfaces/IERC1155Factory.sol";
 import "../CyberpopGame.sol";
 import "../utils/RNG.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
-import "@openzeppelin/contracts/utils/Counters.sol";
 
 contract ConsumerableFactory is AccessControl, IERC1155Factory, RNG {
-    CyberpopGame private comsumerable;
+    CyberpopGame private consumerable;
     uint256[] private tokenIds;
 
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
-    constructor(address _comsumerableAddress, uint256[] memory _tokenIds) {
-        comsumerable = CyberpopGame(_comsumerableAddress);
+    constructor(address _consumerableAddress, uint256[] memory _tokenIds) {
+        consumerable = CyberpopGame(_consumerableAddress);
         tokenIds = _tokenIds;
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
         _setupRole(MINTER_ROLE, _msgSender());
@@ -24,7 +23,7 @@ contract ConsumerableFactory is AccessControl, IERC1155Factory, RNG {
         external
         onlyRole(DEFAULT_ADMIN_ROLE)
     {
-        comsumerable = CyberpopGame(_address);
+        consumerable = CyberpopGame(_address);
         tokenIds = _tokenIds;
     }
 
@@ -35,6 +34,6 @@ contract ConsumerableFactory is AccessControl, IERC1155Factory, RNG {
         bytes memory _data
     ) public override onlyRole(MINTER_ROLE) {
         uint256 id = tokenIds[_optionId];
-        comsumerable.mint(_to, id, 1, _data);
+        consumerable.mint(_to, id, 1, _data);
     }
 }
