@@ -1,7 +1,8 @@
-const BBFactory = artifacts.require('BlindBoxFactory');
+const BlindBoxFactory = artifacts.require('BlindBoxFactory');
 
 const CyberpopGame = artifacts.require("CyberpopGame");
 const GameItemFactory = artifacts.require("GameItemFactory");
+const LootBoxRandomness = artifacts.require("LootBoxRandomness");
 const { grantMinter } = require("../lib/setupLootboxes");
 
 module.exports = async (deployer, network, accounts) => {
@@ -15,10 +16,13 @@ module.exports = async (deployer, network, accounts) => {
             101150, 101250, 101350, 101451
         ])
     const gameItemFactory = await GameItemFactory.deployed()
-
     await grantMinter(gameItemFactory, badge)
+
+    await deployer.link(LootBoxRandomness, BlindBoxFactory);
     await deployer.deploy(BlindBoxFactory);
+
     let factory = await BlindBoxFactory.deployed()
+    await grantMinter(factory, gameItemFactory)
     let optionId = 0
 
     let probabilities = [
