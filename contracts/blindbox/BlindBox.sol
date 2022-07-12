@@ -31,6 +31,11 @@ contract BlindBox is ERC721, ERC721Enumerable, ERC721Burnable, AccessControl {
         _burn(tokenId);
     }
 
+    function name() public view override returns (string memory) {
+        return
+            string(abi.encodePacked(super.name(), Strings.toString(_optionId)));
+    }
+
     function _baseURI() internal view override returns (string memory) {
         return _baseUri;
     }
