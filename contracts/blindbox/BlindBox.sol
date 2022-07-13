@@ -19,7 +19,7 @@ contract BlindBox is ERC721, ERC721Enumerable, ERC721Burnable, AccessControl {
     constructor(uint256 optionId) ERC721("BlindBox", "BOX") {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(MINTER_ROLE, msg.sender);
-        _baseUri = "https://api.cyberpop.online/assets/gatebox";
+        _baseUri = "https://api.cyberpop.online/gatebox";
         _optionId = optionId;
     }
 
