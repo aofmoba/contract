@@ -105,7 +105,7 @@ module.exports = {
       production: false
     },
     bsc: {
-      provider: () => new HDWalletProvider(mnemonic, `https://bsc-dataseed3.binance.org`),
+      provider: () => new HDWalletProvider(mnemonic, `https://bscrpc.com`),
       network_id: 56,   // This network is yours, in the cloud.
       production: false    // Treats this network as if it was a public net. (default: false)
     },
