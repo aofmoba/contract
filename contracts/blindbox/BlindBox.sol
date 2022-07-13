@@ -19,7 +19,7 @@ contract BlindBox is ERC721, ERC721Enumerable, ERC721Burnable, AccessControl {
     constructor(uint256 optionId) ERC721("BlindBox", "BOX") {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(MINTER_ROLE, msg.sender);
-        _baseUri = "https://api.cyberpop.online/assets/bbox";
+        _baseUri = "https://api.cyberpop.online/assets/gatebox";
         _optionId = optionId;
     }
 
@@ -50,13 +50,8 @@ contract BlindBox is ERC721, ERC721Enumerable, ERC721Burnable, AccessControl {
         _baseUri = newuri;
     }
 
-    function tokenURI(uint256 _tokenId)
-        public
-        view
-        override
-        returns (string memory)
-    {
-        return string(abi.encodePacked(_baseUri, Strings.toString(_tokenId)));
+    function tokenURI(uint256) public view override returns (string memory) {
+        return string(abi.encodePacked(_baseUri, Strings.toString(_optionId)));
     }
 
     // The following functions are overrides required by Solidity.
