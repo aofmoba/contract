@@ -50,8 +50,8 @@ contract BlindBox is ERC721, ERC721Enumerable, ERC721Burnable, AccessControl {
         _baseUri = newuri;
     }
 
-    function tokenURI(uint256) public view override returns (string memory) {
-        return string(abi.encodePacked(_baseUri, Strings.toString(_optionId)));
+    function tokenURI(uint256 _tokenId) public view override returns (string memory) {
+        return string(abi.encodePacked(_baseUri, Strings.toString(_optionId), "/", Strings.toString(_tokenId), ".json"));
     }
 
     // The following functions are overrides required by Solidity.
