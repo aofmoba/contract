@@ -19,7 +19,7 @@ contract CyberCard is ERC721, ERC721Enumerable, Pausable, AccessControl {
     constructor(uint256 idPrefix) ERC721("Cyber Card", "CBCA") {
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _setupRole(MINTER_ROLE, msg.sender);
-        _uriPrefix = "https://api.cyberpop.online/head/";
+        _uriPrefix = "https://api.cyberpop.online/card/";
         _idPrefix = idPrefix * 10000;
     }
 
