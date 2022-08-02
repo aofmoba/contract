@@ -113,7 +113,17 @@ module.exports = {
       provider: () => new HDWalletProvider(mnemonic, `https://api.avax-test.network/ext/bc/C/rpc`),
       network_id: "43113",   // This network is yours, in the cloud.
       production: false    // Treats this network as if it was a public net. (default: false)
-    }
+    },
+    csct: {
+      provider: () => new HDWalletProvider(mnemonic, `https://testnet-rpc.coinex.net/`),
+      network_id: "53",   // This network is yours, in the cloud.
+      production: false    // Treats this network as if it was a public net. (default: false)
+    },    
+    csc: {
+      provider: () => new HDWalletProvider(mnemonic, `https://rpc1.coinex.net`),
+      network_id: "52",   // This network is yours, in the cloud.
+      production: false    // Treats this network as if it was a public net. (default: false)
+    },
     // private: {
     // provider: () => new HDWalletProvider(mnemonic, `https://network.io`),
     // network_id: 2111,   // This network is yours, in the cloud.
