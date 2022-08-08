@@ -5,9 +5,12 @@ import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 import "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
+import "@uniswap/lib/contracts/libraries/TransferHelper.sol";
+import "./IWBNB.sol";
 
 contract trading is ERC1155Holder,ERC721Holder{
-    address public usdt;
+    
+    address public WBNB;
     address public nft;
     address public admin;
     address public feeTo;
@@ -22,26 +25,31 @@ contract trading is ERC1155Holder,ERC721Holder{
         _;
     }
 
-    constructor(address usdt_,address nft_){
-        usdt = usdt_;
+    constructor(address nft_,address WBNB_){
         nft = nft_;
+        WBNB = WBNB_;
         admin = msg.sender;
     }
 
-    function mint(uint256 id) external{
+    function mint(uint256 id) external payable{
         uint256 i;
         for(i = 0 ;i < ids.length;i++){
             if(id <= ids[i] ){
                 break;
             }
         }
-        IERC20(usdt).transferFrom(msg.sender,feeTo,prices[i]);
+        IWBNB(WBNB).deposit{value: prices[i]}();
         IERC721(nft).transferFrom(address(this),msg.sender,id);
     }
 
+    function withdrawBNB(address to,uint256 amountBNB) external owner(msg.sender){      
+        IWBNB(WBNB).withdraw(amountBNB);
+        TransferHelper.safeTransferETH(to, amountBNB);
+}
+
     function setPrice(uint256 id,uint256 price_)external owner(msg.sender){
        uint256 idIndex = _idCounter.current();
-        prices[idIndex] = price_;
+        prices[idIndex] = price_ ;
         ids.push(id);
         _idCounter.increment();
     }
@@ -50,5 +58,6 @@ contract trading is ERC1155Holder,ERC721Holder{
         require(msg.sender == admin, 'cyberpop: FORBIDDEN');
         feeTo = _feeTo;
     }
+
 
 }
