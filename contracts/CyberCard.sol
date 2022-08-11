@@ -11,6 +11,7 @@ contract CyberCard is ERC721, ERC721Enumerable, Pausable, AccessControl {
     using Counters for Counters.Counter;
 
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
+    bytes32 public constant BURNER_ROLE = keccak256("BURNER_ROLE");
     Counters.Counter private _tokenIdCounter;
 
     string private _uriPrefix;
@@ -19,6 +20,7 @@ contract CyberCard is ERC721, ERC721Enumerable, Pausable, AccessControl {
     constructor(uint256 idPrefix) ERC721("Cyberpop Support Card", "CBCA") {
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _setupRole(MINTER_ROLE, msg.sender);
+        _setupRole(BURNER_ROLE, _msgSender());
         _uriPrefix = "https://api.cyberpop.online/card/";
         _idPrefix = idPrefix * 10000;
     }
