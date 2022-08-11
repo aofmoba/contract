@@ -38,7 +38,7 @@ contract("Cyborg", function (accounts) {
 
   it("returns correct meta uri", async () => {
     let uri = await cyborg.tokenURI(100)
-    assert.equal("https://api.cyberpop.online/server/100", uri)
+    assert.equal("https://api.cyberpop.online/role/100", uri)
   })
 
   it("allows authorized account to burn tokens", async () => {
@@ -46,7 +46,7 @@ contract("Cyborg", function (accounts) {
     let userB = accounts[3]
     await cyborg.safeMint(userA, 1)
 
-    await expectRevert(cyborg.burn(1, { from: userB }), "ERC721: caller is not authorized to burn token")
+    await expectRevert(cyborg.burn(1, { from: userB }), "Cyber721: caller is not authorized to burn token")
 
     let burner_role = await cyborg.BURNER_ROLE()
     await cyborg.grantRole(burner_role.toString(), userB)
