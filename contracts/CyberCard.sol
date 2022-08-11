@@ -16,7 +16,7 @@ contract CyberCard is ERC721, ERC721Enumerable, Pausable, AccessControl {
     string private _uriPrefix;
     uint256 private _idPrefix;
 
-    constructor(uint256 idPrefix) ERC721("Cyber Card", "CBCA") {
+    constructor(uint256 idPrefix) ERC721("Cyberpop Support Card", "CBCA") {
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _setupRole(MINTER_ROLE, msg.sender);
         _uriPrefix = "https://api.cyberpop.online/card/";
@@ -46,11 +46,46 @@ contract CyberCard is ERC721, ERC721Enumerable, Pausable, AccessControl {
         _unpause();
     }
 
-    function safeMint(address to) public onlyRole(MINTER_ROLE) {
+    /**
+     * @dev Throws if called by any account other than the owner nor the minter.
+     */
+    modifier onlyMinter() {
+        require(
+            hasRole(MINTER_ROLE, _msgSender()) ||
+                hasRole(DEFAULT_ADMIN_ROLE, _msgSender()),
+            "Cyberpop: caller is not the owner nor the minter"
+        );
+        _;
+    }
+
+    function safeMint(address to) public onlyMinter {
         uint256 tokenId = _tokenIdCounter.current();
         _tokenIdCounter.increment();
-        _safeMint(to, _idPrefix + tokenId);
+        _safeMint(to, tokenId);
     }
+
+    // Allow specifying customized tokenId
+    function safeMint(address to, uint256 tokenId) public onlyMinter {
+        _safeMint(to, tokenId);
+    }
+    
+    /**
+     * @dev Burns `tokenId`. See {ERC721-_burn}.
+     *
+     * Requirements:
+     *
+     * - The caller must own `tokenId` or be an authorized operator.
+     */
+    function burn(uint256 tokenId) public {
+        //solhint-disable-next-line max-line-length
+        require(
+            _isApprovedOrOwner(_msgSender(), tokenId) ||
+                hasRole(BURNER_ROLE, _msgSender()),
+            "ERC721: caller is not authorized to burn token"
+        );
+        _burn(tokenId);
+    }
+
 
     function tokenURI(uint256 _tokenId)
         public
