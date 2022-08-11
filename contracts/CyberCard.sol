@@ -63,7 +63,7 @@ contract CyberCard is ERC721, ERC721Enumerable, Pausable, AccessControl {
     function safeMint(address to) public onlyMinter {
         uint256 tokenId = _tokenIdCounter.current();
         _tokenIdCounter.increment();
-        _safeMint(to, tokenId);
+        _safeMint(to, _idPrefix + tokenId);
     }
 
     // Allow specifying customized tokenId
