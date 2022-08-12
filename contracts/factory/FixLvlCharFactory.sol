@@ -5,7 +5,7 @@ import "../interfaces/IERC1155Factory.sol";
 import "./CharacterFactory.sol";
 import "./ConsumerableFactory.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
-import "@openzeppelin/contracts/utils/Counters.sol";
+import "../Counters.sol";
 
 contract FixLvlCharFactory is AccessControl, IERC1155Factory {
     ConsumerableFactory private consumerableFactory;

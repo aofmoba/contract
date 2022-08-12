@@ -5,7 +5,7 @@ import "../interfaces/IERC1155Factory.sol";
 import "../Cyborg.sol";
 import "../utils/RNG.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
-import "@openzeppelin/contracts/utils/Counters.sol";
+import "../Counters.sol";
 
 contract CharacterFactory is AccessControl, IERC1155Factory, RNG {
     using Counters for Counters.Counter;

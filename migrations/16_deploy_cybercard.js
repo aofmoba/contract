@@ -3,5 +3,5 @@ const CyberCard = artifacts.require('CyberCard')
 
 module.exports = async function (deployer, network) {
     // deploy CyberCard
-    await deployer.deploy(CyberCard, ChainIDPrefixes[network])
+    await deployer.deploy(CyberCard, 10000)
 };
