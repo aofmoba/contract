@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.4;
+pragma solidity >=0.7.0 <0.9.0;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
-import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
+import "./Counters.sol";
 
 abstract contract Cyber721 is
     ERC721,
@@ -20,18 +20,17 @@ abstract contract Cyber721 is
     Counters.Counter private _tokenIdCounter;
 
     string private _uriPrefix;
-    uint256 private _idPrefix;
 
     constructor(
-        uint256 idPrefix,
         string memory uriPrefix,
         string memory name,
-        string memory symbol
+        string memory symbol,
+        uint256 initId_
     ) ERC721(name, symbol) {
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _setupRole(MINTER_ROLE, msg.sender);
         _uriPrefix = uriPrefix;
-        _idPrefix = idPrefix * 10000;
+        _tokenIdCounter.setInitValue(initId_);
     }
 
     function _baseURI() internal view override returns (string memory) {
@@ -45,9 +44,6 @@ abstract contract Cyber721 is
         _uriPrefix = newuri;
     }
 
-    function setIdPrefix(uint256 prefix) external onlyRole(DEFAULT_ADMIN_ROLE) {
-        _idPrefix = prefix * 10000;
-    }
 
     function pause() public onlyRole(DEFAULT_ADMIN_ROLE) {
         _pause();
@@ -60,7 +56,7 @@ abstract contract Cyber721 is
     function safeMint(address to) public onlyMinter {
         uint256 tokenId = _tokenIdCounter.current();
         _tokenIdCounter.increment();
-        _safeMint(to, _idPrefix + tokenId);
+        _safeMint(to,tokenId);
     }
 
     // Allow specifying customized tokenId
