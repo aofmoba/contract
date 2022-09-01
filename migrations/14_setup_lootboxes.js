@@ -2,6 +2,7 @@ const CyberClubFactory = artifacts.require("CyberClubFactory");
 const CharacterFactory = artifacts.require("CharacterFactory");
 const ConsumerableFactory = artifacts.require("ConsumerableFactory");
 const FixLvlCharFactory = artifacts.require("FixLvlCharFactory");
+const CardFactory = artifacts.require("CardFactory");
 const LootBox = artifacts.require("LootBox");
 
 const { grantMinter } = require("../lib/setupLootboxes");
@@ -53,28 +54,14 @@ module.exports = async (deployer, network, accounts) => {
   // FixLvlCharFactory probabilities
   let probabilities = [
     [9000, 1000],
-    [5000, 5000],
-    [0, 800, 9000, 200]
+    [5000, 5000]
   ]
 
-  // ID 7-9
+  // ID 7-8
   for (let i = 0; i < probabilities.length; i++) {
     await lootbox.addNewOption(fixLvlCharFactory.address, probabilities[i]);
     console.log(`FixedLevel ${probabilities[i]} option ID:`, optionId++)
   }
-  // ID 10
-  await lootbox.addNewOption(charFactory.address, [800, 9000, 200]);
-  console.log(`Genesis hero [800, 9000, 200] option ID:`, optionId++)
-
-  // 支援卡机率 
-  probabilities = [
-    [0, 0, 0, 0, 3500, 3500, 1500, 1500],
-    [0, 0, 0, 0, 0, 0, 0, 0, 3500, 3500, 1500, 1500]
-  ]
-
-  // ID 11,12
-  for (let i = 0; i < probabilities.length; i++) {
-    await lootbox.addNewOption(consumerableFactory.address, probabilities[i]);
-    console.log(`support card ${probabilities[i]} option ID:`, optionId++)
-  }
+  
+  // ID 9 以后待定
 };
