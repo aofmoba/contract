@@ -124,6 +124,11 @@ module.exports = {
       network_id: "52",   // This network is yours, in the cloud.
       production: false    // Treats this network as if it was a public net. (default: false)
     }
+    klay: {
+      provider: () => new HDWalletProvider(mnemonic, `https://cypress.fandom.finance/archive`),
+      network_id: "8217",   // This network is yours, in the cloud.
+      production: false    // Treats this network as if it was a public net. (default: false)
+    }
     // private: {
     // provider: () => new HDWalletProvider(mnemonic, `https://network.io`),
     // network_id: 2111,   // This network is yours, in the cloud.
@@ -165,7 +170,7 @@ module.exports = {
   // NOTE: It is not possible to migrate your contracts to truffle DB and you should
   // make a backup of your artifacts to a safe location before enabling this feature.
   //
-  // After you backed up your artifacts you can utilize db by running migrate as follows: 
+  // After you backed up your artifacts you can utilize db by running migrate as follows:
   // $ truffle migrate --reset --compile-all
   //
   // db: {
@@ -179,3 +184,4 @@ module.exports = {
   // }
   // }
 };
+                                                             
