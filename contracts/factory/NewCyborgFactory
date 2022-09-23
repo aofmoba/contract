@@ -2,7 +2,7 @@
 pragma solidity ^0.8.2;
 
 import "../interfaces/IERC1155Factory.sol";
-import "../Cyborg.sol";
+import "../CyberCard.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "../Counters.sol";
 
@@ -14,7 +14,8 @@ contract NewCyborgFactory is AccessControl, IERC1155Factory {
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
     address private cyberChar;
-    uint256 private _idPrefix;
+
+    uint256 prechain = 100000000; // csc
 
     constructor(address _nftAddress) {
         cyberChar = _nftAddress;
@@ -23,27 +24,18 @@ contract NewCyborgFactory is AccessControl, IERC1155Factory {
     }
 
 
-    function setNftAddress(address _address)
-        external
-        onlyRole(DEFAULT_ADMIN_ROLE)
-    {
-        cyberChar = _address;
-    }
-
-
     function mint(
-        uint256 _level,
+        uint256 _optionId,
         address _to,
         uint256 _amount,
         bytes memory _data
     ) public override onlyRole(MINTER_ROLE) {
 
-        _level++;
+        _optionId = 1;
         _data = new bytes(1);
         uint256 id = _tokenIdCounter.current();
         require(_amount == 1, "cannot mint more than 1");
-        CyberCard(cyberChar).safeMint(
-            _to, id+20000000);
+        CyberCard(cyberChar).safeMint(_to, id + 20000000  + prechain);
         _tokenIdCounter.increment();
     }
 }
